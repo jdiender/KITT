@@ -4,12 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pyaudio = "*"
+#pyaudio = "*" I'm on Linux, so I do not need this; you should probably uncomment this!
 pyserial = "*"
 numpy = "*"
 matplotlib = "*"
 keyboard = "*"
 scipy = "*"
+pyqt5 = "*"
 
 [dev-packages]
 

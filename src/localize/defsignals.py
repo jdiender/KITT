@@ -1,4 +1,7 @@
+from dataclasses import dataclass;
+
 import numpy as np;
+import matplotlib.pyplot as plt;
 
 @dataclass
 class signal:
@@ -43,3 +46,13 @@ class signal:
 
         distance = abs(np.argmax(h0) - np.argmax(h1)) / fs_rx * 343
         return distance
+
+    def naive_plot(self):
+        y = self.signal
+
+        plt.figure(figsize=(11,4))
+        plt.title("?")
+        plt.xlabel("? [?]")
+        plt.ylabel("? [?]")
+        plt.plot(y)
+        plt.show()
