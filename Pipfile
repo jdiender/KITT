@@ -4,10 +4,12 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+pyaudio = "*"
 pyserial = "*"
 numpy = "*"
 matplotlib = "*"
 keyboard = "*"
+scipy = "*"
 
 [dev-packages]
 
