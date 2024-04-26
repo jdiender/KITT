@@ -70,12 +70,3 @@ class defsignal:
         h1 = self.channel(self.signal)
         distance = abs(np.argmax(h0) - np.argmax(h1)) / constants.fs_rx * 343
         return distance
-
-    def naive_plot(self) -> None:
-        y = self.signal
-        plt.figure(figsize=(11, 4))
-        plt.title('?')
-        plt.xlabel('? [?]')
-        plt.ylabel('? [?]')
-        plt.plot(y)
-        plt.show()
