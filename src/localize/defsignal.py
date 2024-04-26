@@ -2,7 +2,6 @@ from scipy.fft import fft, ifft
 from dataclasses import dataclass
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 @dataclass
