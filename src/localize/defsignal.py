@@ -1,29 +1,41 @@
 from scipy.fft import fft, ifft
-from dataclasses import dataclass;
+from dataclasses import dataclass
 
-import numpy as np;
-import matplotlib.pyplot as plt;
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+@dataclass
+class constants:
+    fs_rx: float = 10e3  # TODO: which sampling frequency is required by specs?
+    epsi: float = 0.01
+
 
 @dataclass
 class defsignal:
-    __epsi = 0.01
-    __fs_rx = 10e3 # TODO: what sampling frequency is required by specs?
+    signal: np.ndarray
 
-    def __init__(self, y):
-        while type(self) == type(y):
-            y = y.signal
-        assert y.ndim == 1, "ERROR: signal should be flat"
+    def __init__(self, y: np.ndarray) -> None:
+        while type(self) == type(y):  # NOTE: nested signals are not supported,
+            y = y.signal              # so we flatten it instead.
+        assert y.ndim == 1, 'ERROR: signal should be flat'
         self.signal = y
 
-    def convolve(self, x):
+    def convolve(self, x: np.ndarray) -> np.ndarray:
+        """
+        Calculate the convolution of the contained signal in @defsignal with
+          the given signal.
+        x: np.ndarray
+        @out: np.ndarray
+        """
         if type(x) == type(self):
             x = x.signal
         return np.convolve(self.signal, x)
 
-    def channel(self, x):
+    def channel(self, x: np.ndarray) -> np.ndarray:
         if type(x) == type(self):
             x = x.signal
-        assert x.ndim == 1, "ERROR: signal should be flat"
+        assert x.ndim == 1, 'ERROR: signal should be flat'
 
         x = x
         y = self.signal
@@ -47,7 +59,7 @@ class defsignal:
                 H = np.append(H, [0])
 
         # Threshold to avoid blow ups of noise during inversion.
-        ii = np.absolute(X) < self.__epsi * max(np.absolute(X))
+        ii = np.absolute(X) < constants.epsi * max(np.absolute(X))
         for idx in range(len(ii)):
             if ii[idx] is False:
                 H[idx] = 0
@@ -58,19 +70,19 @@ class defsignal:
         # Return the calculated impulse response.
         return h
 
-    def calculate_distance(self, h):
+    def calculate_distance(self, h: np.ndarray) -> np.ndarray:
         if type(h) == type(self):
             h = h.signal
         h0 = self.channel(h)
         h1 = self.channel(self.signal)
-        distance = abs(np.argmax(h0) - np.argmax(h1)) / self.__fs_rx * 343
+        distance = abs(np.argmax(h0) - np.argmax(h1)) / constants.fs_rx * 343
         return distance
 
-    def naive_plot(self):
+    def naive_plot(self) -> None:
         y = self.signal
-        plt.figure(figsize=(11,4))
-        plt.title("?")
-        plt.xlabel("? [?]")
-        plt.ylabel("? [?]")
+        plt.figure(figsize=(11, 4))
+        plt.title('?')
+        plt.xlabel('? [?]')
+        plt.ylabel('? [?]')
         plt.plot(y)
         plt.show()

@@ -1,7 +1,8 @@
-from defsignal import defsignal;
+from defsignal import defsignal
 
-import sys;
-import numpy as np;
+import sys
+import numpy as np
+
 
 def main() -> int:
     # Test your channel function here:
@@ -21,14 +22,14 @@ def main() -> int:
 
     x3 = defsignal(np.sign(np.random.rand(N)-0.5))
 
-    ## Output: y1, y2, y3
+    # Output: y1, y2, y3
     y1 = defsignal(x1.convolve(h))
     y2 = defsignal(x2.convolve(h))
     y3 = defsignal(x3.convolve(h))
 
     # Channel estimation via ch3: h1, h2, h3
     # suitable epsi: try values between 0.001 and 0.05
-    epsi = 0.01
+    # epsi = 0.01
 
     print(type(x1))
 
@@ -42,7 +43,8 @@ def main() -> int:
     print(h3)
 
     defsignal(h2).naive_plot()
-    return 0;
+    return 0
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     sys.exit(main())
