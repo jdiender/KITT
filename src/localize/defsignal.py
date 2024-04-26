@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 
 @dataclass
 class constants:
-    fs_rx: float = 10e3  # TODO: which sampling frequency is required by specs?
-    epsi: float = 0.01
+    fs_rx: float = 44100  # TODO: which sampling frequency is required by specs?
+    epsi: float = 0.001
 
 
 @dataclass
@@ -50,19 +50,12 @@ class defsignal:
         X = fft(x)
         Y = fft(y)
 
-        # `H = Y/X` only does not check for cases where `X == 0`.
-        H = np.array([])
-        for (y, x) in zip(Y, X):
-            if x != 0:
-                H = np.append(H, [y/x])
-            else:
-                H = np.append(H, [0])
+        with np.errstate(all='ignore'):
+            H = Y/X
 
         # Threshold to avoid blow ups of noise during inversion.
         ii = np.absolute(X) < constants.epsi * max(np.absolute(X))
-        for idx in range(len(ii)):
-            if ii[idx] is False:
-                H[idx] = 0
+        H[ii] = 0
 
         # Ensure the result is real.
         h = np.real(ifft(H))
@@ -70,7 +63,7 @@ class defsignal:
         # Return the calculated impulse response.
         return h
 
-    def calculate_distance(self, h: np.ndarray) -> np.ndarray:
+    def calculate_distance(self, h: np.ndarray) -> float:
         if type(h) == type(self):
             h = h.signal
         h0 = self.channel(h)

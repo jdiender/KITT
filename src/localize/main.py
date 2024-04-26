@@ -1,48 +1,20 @@
+from scipy.io import wavfile
 from defsignal import defsignal
 
 import sys
-import numpy as np
 
 
 def main() -> int:
-    # Test your channel function here:
-    # Channel
-    h = np.array([1, 2, 3, 2, 1])
-    # Lhat = 5  # Estimate of channel length L, but could be different.
+    fs, audio = wavfile.read('./Recording-7-real-1m.wav')
 
-    # Input length
-    N = 20
+    y5cm_0 = defsignal(audio[:, 0])
+    y5cm_1 = defsignal(audio[:, 1])
 
-    # Input: x1, x2, x3
-    x1 = [0, -1, 0.5]
-    x1 = defsignal(np.pad(x1, (0, N - len(x1))))
+    h0 = defsignal(y5cm_0.channel(y5cm_0))
+    h1 = defsignal(y5cm_1.channel(y5cm_0))
 
-    omega = 0.5
-    x2 = defsignal(np.cos(omega * np.arange(N)))
+    print(h0.calculate_distance(h1))
 
-    x3 = defsignal(np.sign(np.random.rand(N)-0.5))
-
-    # Output: y1, y2, y3
-    y1 = defsignal(x1.convolve(h))
-    y2 = defsignal(x2.convolve(h))
-    y3 = defsignal(x3.convolve(h))
-
-    # Channel estimation via ch3: h1, h2, h3
-    # suitable epsi: try values between 0.001 and 0.05
-    # epsi = 0.01
-
-    print(type(x1))
-
-    h1 = defsignal(defsignal(defsignal(y1.channel(x1))))
-    h2 = y2.channel(x2)
-    h3 = y3.channel(x3)
-
-    # Print result, should give true channel (which is [1,2,3,2,1])
-    print(h1)
-    print(h2)
-    print(h3)
-
-    defsignal(h2).naive_plot()
     return 0
 
 
