@@ -6,7 +6,7 @@ import numpy as np
 
 @dataclass
 class constants:
-    fs_rx: float = 44100  # TODO: which sampling frequency is required by specs?
+    fs_rx: float = 44100
     epsi: float = 0.001
 
 
@@ -23,7 +23,7 @@ class defsignal:
     def convolve(self, x: np.ndarray) -> np.ndarray:
         """
         Calculate the convolution of the contained signal in @defsignal with
-          the given signal.
+          the given signal x.
         x: np.ndarray
         @out: np.ndarray
         """
