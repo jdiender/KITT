@@ -5,14 +5,11 @@ import numpy as np
 
 
 @dataclass
-class constants:
-    fs_rx: float = 44100
-    epsi: float = 0.001
-
-
-@dataclass
 class defsignal:
     signal: np.ndarray
+
+    fs_rx = 44100
+    epsi = 0.001
 
     def __init__(self, y: np.ndarray) -> None:
         while type(self) == type(y):  # NOTE: nested signals are not supported,
@@ -21,12 +18,6 @@ class defsignal:
         self.signal = y
 
     def convolve(self, x: np.ndarray) -> np.ndarray:
-        """
-        Calculate the convolution of the contained signal in @defsignal with
-          the given signal x.
-        x: np.ndarray
-        @out: np.ndarray
-        """
         if type(x) == type(self):
             x = x.signal
         return np.convolve(self.signal, x)
@@ -53,7 +44,7 @@ class defsignal:
             H = Y/X
 
         # Threshold to avoid blow ups of noise during inversion.
-        ii = np.absolute(X) < constants.epsi * max(np.absolute(X))
+        ii = np.absolute(X) < defsignal.epsi * max(np.absolute(X))
         H[ii] = 0
 
         # Ensure the result is real.
@@ -66,4 +57,4 @@ class defsignal:
         if type(y) == type(self):
             y = y.signal
         h = (self.channel(self.signal), self.channel(y))
-        return abs(np.argmax(h[0]) - np.argmax(h[1])) / constants.fs_rx * 343
+        return abs(np.argmax(h[0]) - np.argmax(h[1])) / defsignal.fs_rx * 343
