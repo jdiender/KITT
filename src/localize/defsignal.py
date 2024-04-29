@@ -62,10 +62,8 @@ class defsignal:
         # Return the calculated impulse response.
         return h
 
-    def calculate_distance(self, h: np.ndarray) -> float:
-        if type(h) == type(self):
-            h = h.signal
-        h0 = self.channel(h)
-        h1 = self.channel(self.signal)
-        distance = abs(np.argmax(h0) - np.argmax(h1)) / constants.fs_rx * 343
-        return distance
+    def calculate_distance(self, y: np.ndarray) -> float:
+        if type(y) == type(self):
+            y = y.signal
+        h = (self.channel(self.signal), self.channel(y))
+        return abs(np.argmax(h[0]) - np.argmax(h[1])) / constants.fs_rx * 343
