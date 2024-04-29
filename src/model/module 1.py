@@ -1,7 +1,6 @@
 import serial
 import keyboard
 import time
-
 class KITT:
     def __init__(self, port, baudrate=115200):
         self.serial = serial.Serial(port, baudrate, rtscts=True)
@@ -50,10 +49,10 @@ class KITT:
             self.set_speed(150) 
         else: 
             self.set_speed(150) 
-        
+
     def __del__(self):
         self.serial.close()
-
+        
 def wasd(kitt):
     try:
         while True:
@@ -81,7 +80,7 @@ def wasd(kitt):
     finally:
         kitt.stop()
         if kitt.serial:
-            kitt.serial.close()
+            kitt.serial.close()      
         
 if __name__ == "__main__":
     kitt = KITT('COM3')
