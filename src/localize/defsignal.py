@@ -2,13 +2,12 @@ from scipy.fft import fft, ifft
 from dataclasses import dataclass
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 @dataclass
 class constants:
-    fs_rx: float = 10e3  # TODO: which sampling frequency is required by specs?
-    epsi: float = 0.01
+    fs_rx: float = 44100
+    epsi: float = 0.001
 
 
 @dataclass
@@ -24,7 +23,7 @@ class defsignal:
     def convolve(self, x: np.ndarray) -> np.ndarray:
         """
         Calculate the convolution of the contained signal in @defsignal with
-          the given signal.
+          the given signal x.
         x: np.ndarray
         @out: np.ndarray
         """
@@ -50,19 +49,12 @@ class defsignal:
         X = fft(x)
         Y = fft(y)
 
-        # `H = Y/X` only does not check for cases where `X == 0`.
-        H = np.array([])
-        for (y, x) in zip(Y, X):
-            if x != 0:
-                H = np.append(H, [y/x])
-            else:
-                H = np.append(H, [0])
+        with np.errstate(all='ignore'):
+            H = Y/X
 
         # Threshold to avoid blow ups of noise during inversion.
         ii = np.absolute(X) < constants.epsi * max(np.absolute(X))
-        for idx in range(len(ii)):
-            if ii[idx] is False:
-                H[idx] = 0
+        H[ii] = 0
 
         # Ensure the result is real.
         h = np.real(ifft(H))
@@ -70,19 +62,8 @@ class defsignal:
         # Return the calculated impulse response.
         return h
 
-    def calculate_distance(self, h: np.ndarray) -> np.ndarray:
-        if type(h) == type(self):
-            h = h.signal
-        h0 = self.channel(h)
-        h1 = self.channel(self.signal)
-        distance = abs(np.argmax(h0) - np.argmax(h1)) / constants.fs_rx * 343
-        return distance
-
-    def naive_plot(self) -> None:
-        y = self.signal
-        plt.figure(figsize=(11, 4))
-        plt.title('?')
-        plt.xlabel('? [?]')
-        plt.ylabel('? [?]')
-        plt.plot(y)
-        plt.show()
+    def calculate_distance(self, y: np.ndarray) -> float:
+        if type(y) == type(self):
+            y = y.signal
+        h = (self.channel(self.signal), self.channel(y))
+        return abs(np.argmax(h[0]) - np.argmax(h[1])) / constants.fs_rx * 343

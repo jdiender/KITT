@@ -1,48 +1,44 @@
+from scipy.io import wavfile
 from defsignal import defsignal
 
 import sys
+import os
+
 import numpy as np
 
 
 def main() -> int:
-    # Test your channel function here:
-    # Channel
-    h = np.array([1, 2, 3, 2, 1])
-    # Lhat = 5  # Estimate of channel length L, but could be different.
+    # 5 cm
+    recording_name = '../../recordings/Recording-7-real-5cm.wav'
+    _, audio = wavfile.read(recording_name)
+    y = (defsignal(audio[:, 0]), defsignal(audio[:, 1]))
+    print(f'INFO: recording({recording_name}): distance: {y[0].calculate_distance(y[1])} meter')
 
-    # Input length
-    N = 20
+    # 1 m
+    recording_name = '../../recordings/Recording-7-real-1m.wav'
+    _, audio = wavfile.read(recording_name)
+    y = (defsignal(audio[:, 0]), defsignal(audio[:, 1]))
+    print(f'INFO: recording({recording_name}): distance: {y[0].calculate_distance(y[1])} meter')
 
-    # Input: x1, x2, x3
-    x1 = [0, -1, 0.5]
-    x1 = defsignal(np.pad(x1, (0, N - len(x1))))
+    # load all recordings
+    recordings = []
+    for path, _, files in os.walk('../../recordings'):
+        for recording_name in files:
+            if 'real' in recording_name:
+                continue
+            recording_name: str = os.path.join(path, recording_name)
+            recordings.append(recording_name)
+            print(f'INFO: loaded {recording_name}')
 
-    omega = 0.5
-    x2 = defsignal(np.cos(omega * np.arange(N)))
+    # process all recordings
+    _, reference_channels = wavfile.read('../../recordings/reference.wav')
+    for recording_name in recordings:
+        _, recording_channels = wavfile.read(recording_name)
+        for (idx, ref) in enumerate(reference_channels.T):
+            for (jdx, rec) in enumerate(recording_channels.T):
+                distance = defsignal(ref).calculate_distance(rec)
+                print(f'INFO: recording({recording_name}): reference({idx}): channel({jdx}): distance: {distance} m')
 
-    x3 = defsignal(np.sign(np.random.rand(N)-0.5))
-
-    # Output: y1, y2, y3
-    y1 = defsignal(x1.convolve(h))
-    y2 = defsignal(x2.convolve(h))
-    y3 = defsignal(x3.convolve(h))
-
-    # Channel estimation via ch3: h1, h2, h3
-    # suitable epsi: try values between 0.001 and 0.05
-    # epsi = 0.01
-
-    print(type(x1))
-
-    h1 = defsignal(defsignal(defsignal(y1.channel(x1))))
-    h2 = y2.channel(x2)
-    h3 = y3.channel(x3)
-
-    # Print result, should give true channel (which is [1,2,3,2,1])
-    print(h1)
-    print(h2)
-    print(h3)
-
-    defsignal(h2).naive_plot()
     return 0
 
 
