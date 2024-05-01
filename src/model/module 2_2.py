@@ -20,38 +20,30 @@ class KITT:
     def stop(self):
         self.set_angle(150)  # Return to neutral position
 
-    def sensor_data(self):
-        self.serial.write(b'S\n')
-        data = self.serial.read_until(b'\x04').decode().strip()
-        return float(data) if data.isdigit() else None
+    def sensor_data_distance(self):
+        self.serial.write(b'Sd\n')
+        data = self.serial.read_until(b'\x04')
+        return data
     
     def __del__(self):
         self.serial.close()
 
-    def test_distance_with_object_movement(self):
-        print("Start moving the object towards or away from KITT.")
-        input("Press Enter to start recording measurements.")
-        start_time = time.time()
-        try:
-            while True:
-                measured_distance = self.sensor_data()
-                if measured_distance is not None:
-                    current_time = time.time() - start_time
-                    self.measurements.append((current_time, measured_distance))
-                    print(f"Time: {current_time:.2f}s, Measured Distance: {measured_distance} cm")
-                if input("Press 'q' to stop or Enter to continue measuring: ") == 'q':
-                    break
-        finally:
-            self.stop()
-            self.__del__() #break connection with KITT
-            return self.measurements
+    def test_distance_with_object_placement(self):
+        # KITT remains stationary
+        sensor_distance = self.sensor_data_distance()
+        if sensor_distance is not None:
+            print(f"Measured Sensor Distance: {sensor_distance} cm")
+        self.measurements.append(sensor_distance)
+        print(self.measurements)
+        self.serial.close()
+        return self.measurements
+            
 
+    
 if __name__ == "__main__":
     kitt = KITT('COM3')
     print("Testing how quickly the sensor detects changes in distance...")
-    measurements = kitt.test_distance_with_object_movement()
-    # Create a sample DataFrame
-    df = pd.DataFrame(measurements)
-
-    # Save to a CSV file
-    df.to_csv('measurements2_2.csv', index=False)
+    start_time = time.time()
+    a=kitt.test_distance_with_object_placement()
+    stop_time = time.time() - start_time
+    print(stop_time)
