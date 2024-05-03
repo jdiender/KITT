@@ -4,32 +4,34 @@ from scipy.io import wavfile
 from scipy.fft import fft, ifft
 from scipy.signal import convolve, unit_impulse
 from scipy.signal import find_peaks
+from task1 import h
+from task1 import ch3
 Fs_RX = 44100
-def ch3(x,y,epsi):
-    Nx = len(x) # Length of x
-    Ny = len(y) # Length of y
-    Nh = Ny - Nx + 1 # Length of h
+# def ch3(x,y,epsi):
+#     Nx = len(x) # Length of x
+#     Ny = len(y) # Length of y
+#     Nh = Ny - Nx + 1 # Length of h
 
-    # Force x to be the same length as y
-    x = np.pad(x, (0, Ny - Nx))
+#     # Force x to be the same length as y
+#     x = np.pad(x, (0, Ny - Nx))
 
-    # Deconvolution in frequency domain
-    X = fft(x)
-    Y = fft(y)
-    #if X is not 0:
-    H = Y / X
-    #else:
-     # H = 0
-    # Threshold to avoid blow ups of noise during inversion
-    ii = np.absolute(X) < epsi * max(np.absolute(X))
-    # for idx in range(len(ii)):
-    #     if ii[idx] is False:
-    #         H[idx] = 0
-    H[ii] = 0
+#     # Deconvolution in frequency domain
+#     X = fft(x)
+#     Y = fft(y)
+#     #if X is not 0:
+#     H = Y / X
+#     #else:
+#      # H = 0
+#     # Threshold to avoid blow ups of noise during inversion
+#     ii = np.absolute(X) < epsi * max(np.absolute(X))
+#     # for idx in range(len(ii)):
+#     #     if ii[idx] is False:
+#     #         H[idx] = 0
+#     H[ii] = 0
 
-    h = np.real(ifft(H))    # ensure the result is real
-    #h = h[:Lhat]    # optional: truncate to length Lhat (L is not reliable?)
-    return h
+#     h = np.real(ifft(H))    # ensure the result is real
+#     #h = h[:Lhat]    # optional: truncate to length Lhat (L is not reliable?)
+#     return h
 
 def calc_distance(h0, h1):
   return abs(np.argmax(h0) - np.argmax(h1)) / Fs_RX * 343
@@ -71,15 +73,15 @@ for file_path in audio_files.values():
 #             print("Time difference of arrival between microphone", i, "to microphone", j, dist, "meters")
 
 def calculate_distances_for_channel_pairs(data, ref):
-    distances = []
+    TDOA = []
     for i in range(data.shape[1]):
         for j in range(i + 1, data.shape[1]):  # Ensure pairs are unique and not repeated
-            h0 = ch3(data[:, i], ref[:, 0], 0.01)
-            h1 = ch3(data[:, j], ref[:, 0], 0.01)
-            dist = calc_distance(h1, h0)/343
-            distances.append((i, j, dist))
-            print(f"TDOA from microphone {i} to microphone {j}: {dist} seconds")
-    return distances
+            h0 = h[i]
+            h1 = h[j]            
+            time = calc_distance(h1, h0)/343
+            TDOA.append((i, j, time))
+            print(f"TDOA from microphone {i} to microphone {j}: {time} seconds")
+    return TDOA
 
 calculate_distances_for_channel_pairs(data[0], ref)
 
