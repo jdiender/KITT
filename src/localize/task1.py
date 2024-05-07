@@ -188,7 +188,7 @@ ref_sliced = ref[:,0]
 h=[]
 h1=ch3(audio_sliced0[1],ref[120000:150000,0],0.01)
 for i in range(5):
-    hi=ch3(audio_sliced0[i],ref[120000:150000,0],0.01)
+    hi=abs(ch3(audio_sliced0[i],ref[120000:150000,0],0.01))
     h.append(hi)
     plt.plot(abs(h[i]))
     plt.show()
