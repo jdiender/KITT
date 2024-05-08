@@ -41,21 +41,12 @@ audio_sliced0 = [
     [],
     []
 ]
-audio_sliced0[0] = data[0][40000:60000, 0]
-audio_sliced0[1] = data[0][40000:60000, 1]
-audio_sliced0[2] = data[0][40000:60000, 2]
-audio_sliced0[3] = data[0][40000:60000, 3]
-audio_sliced0[4] = data[0][40000:60000, 4]
+audio_sliced0[0] = data[0][120000:150000, 0]
+audio_sliced0[1] = data[0][120000:150000, 1]
+audio_sliced0[2] = data[0][120000:150000, 2]
+audio_sliced0[3] = data[0][120000:150000, 3]
+audio_sliced0[4] = data[0][120000:150000, 4]
 
-# plt.plot(data[0])
-# plt.show()
-
-
-
-# for i in range(len(audio_sliced0)):
-#     plt.title(f'record {i}')
-#     plt.plot(audio_sliced0[i])
-#     plt.show()
 
 audio_sliced1 = [
     [],
@@ -66,21 +57,12 @@ audio_sliced1 = [
 ]
 
 
-audio_sliced1[0] = data[1][40000:65000, 0]
-audio_sliced1[1] = data[1][40000:65000, 1]
-audio_sliced1[2] = data[1][40000:65000, 2]
-audio_sliced1[3] = data[1][40000:65000, 3]
-audio_sliced1[4] = data[1][40000:65000, 4]
+audio_sliced1[0] = data[1][120000:150000, 0]
+audio_sliced1[1] = data[1][120000:150000, 1]
+audio_sliced1[2] = data[1][120000:150000, 2]
+audio_sliced1[3] = data[1][120000:150000, 3]
+audio_sliced1[4] = data[1][120000:150000, 4]
 
-# plt.plot(data[1])
-# plt.show()
-
-
-
-# for i in range(len(audio_sliced1)):
-#     plt.title(f'record {i}')
-#     plt.plot(audio_sliced1[i])
-#     plt.show()
 
 audio_sliced2 = [
     [],
@@ -90,21 +72,11 @@ audio_sliced2 = [
     []
 ]
 
-audio_sliced2[0] = data[2][85000:105000, 0]
-audio_sliced2[1] = data[2][85000:105000, 1]
-audio_sliced2[2] = data[2][85000:105000, 2]
-audio_sliced2[3] = data[2][85000:105000, 3]
-audio_sliced2[4] = data[2][85000:105000, 4]
-
-# plt.plot(data[2])
-# plt.show()
-
-
-
-# for i in range(len(audio_sliced2)):
-#     plt.title(f'record {i}')
-#     plt.plot(audio_sliced2[i])
-#     plt.show()
+audio_sliced2[0] = data[2][120000:150000, 0]
+audio_sliced2[1] = data[2][120000:150000, 1]
+audio_sliced2[2] = data[2][120000:150000, 2]
+audio_sliced2[3] = data[2][120000:150000, 3]
+audio_sliced2[4] = data[2][120000:150000, 4]
 
 audio_sliced3 = [
     [],
@@ -114,21 +86,12 @@ audio_sliced3 = [
     []
 ]
 
-audio_sliced3[0] = data[3][65000:85000, 0]
-audio_sliced3[1] = data[3][65000:85000, 1]
-audio_sliced3[2] = data[3][65000:85000, 2]
-audio_sliced3[3] = data[3][65000:85000, 3]
-audio_sliced3[4] = data[3][65000:85000, 4]
+audio_sliced3[0] = data[3][120000:150000, 0]
+audio_sliced3[1] = data[3][120000:150000, 1]
+audio_sliced3[2] = data[3][120000:150000, 2]
+audio_sliced3[3] = data[3][120000:150000, 3]
+audio_sliced3[4] = data[3][120000:150000, 4]
 
-# plt.plot(data[3])
-# plt.show()
-
-
-
-# for i in range(len(audio_sliced3)):
-#     plt.title(f'record {i}')
-#     plt.plot(audio_sliced3[i])
-#     plt.show()
 audio_sliced4 = [
     [],
     [],
@@ -143,14 +106,6 @@ audio_sliced4[2] = data[4][120000:150000, 2]
 audio_sliced4[3] = data[4][120000:150000, 3]
 audio_sliced4[4] = data[4][120000:150000, 4]
 
-# plt.plot(data[3])
-# plt.show()
-
-
-# for i in range(len(audio_sliced4)):
-#     plt.title(f'record {i}')
-#     plt.plot(audio_sliced4[i])
-#     plt.show()
 
 
 
@@ -161,20 +116,13 @@ audio_sliced5 = [
     [],
     []
 ]
-audio_sliced5[0] = data[5][20000:38000, 0]
-audio_sliced5[1] = data[5][20000:38000, 1]
-audio_sliced5[2] = data[5][20000:38000, 2]
-audio_sliced5[3] = data[5][20000:38000, 3]
-audio_sliced5[4] = data[5][20000:38000, 4]
-
-# plt.plot(data[5])
-# plt.show()
+audio_sliced5[0] = data[5][120000:150000, 0]
+audio_sliced5[1] = data[5][120000:150000, 1]
+audio_sliced5[2] = data[5][120000:150000, 2]
+audio_sliced5[3] = data[5][120000:150000, 3]
+audio_sliced5[4] = data[5][120000:150000, 4]
 
 
-# for i in range(len(audio_sliced5)):
-#     plt.title(f'record {i}')
-#     plt.plot(audio_sliced5[i])
-#     plt.show()
 
 audio_sliced6 = [
     [],
@@ -183,19 +131,13 @@ audio_sliced6 = [
     [],
     []
 ]
-audio_sliced6[0] = data[6][40000:62000, 0]
-audio_sliced6[1] = data[6][40000:62000, 1]
-audio_sliced6[2] = data[6][40000:62000, 2]
-audio_sliced6[3] = data[6][40000:62000, 3]
-audio_sliced6[4] = data[6][40000:62000, 4]
+audio_sliced6[0] = data[6][120000:150000, 0]
+audio_sliced6[1] = data[6][120000:150000, 1]
+audio_sliced6[2] = data[6][120000:150000, 2]
+audio_sliced6[3] = data[6][120000:150000, 3]
+audio_sliced6[4] = data[6][120000:150000, 4]
 
-# plt.plot(data[6])
-# plt.show()
 
-# for i in range(len(audio_sliced6)):
-#     plt.title(f'(enes) file7: record {i}')
-#     plt.plot(audio_sliced6[i])
-#     plt.show()
 audio_sliced=[
     [audio_sliced0],
     [audio_sliced1],
@@ -206,12 +148,48 @@ audio_sliced=[
     [audio_sliced6],
 
 ]
-# Assuming audio_sliced is your list of recordings, each containing lists of channels
-for i, recording in enumerate(audio_sliced):
-    for j, channel in enumerate(recording[0]):  # Access the first (and only) item in each recording list, which contains the channels
-        plt.figure(figsize=(10, 4))  # Optional: Set figure size
-        plt.title(f'Recording {i+1}, Channel {j+1}')
-        plt.plot(channel)
-        plt.xlabel('Sample Index')
-        plt.ylabel('Amplitude')
-        plt.show()
+# # Assuming audio_sliced is your list of recordings, each containing lists of channels
+# for i, recording in enumerate(audio_sliced):
+#     for j, channel in enumerate(recording[0]):  # Access the first (and only) item in each recording list, which contains the channels
+#         plt.figure(figsize=(10, 4))  # Optional: Set figure size
+#         plt.title(f'Recording {i+1}, Channel {j+1}')
+#         plt.plot(channel)
+#         plt.xlabel('Sample Index')
+#         plt.ylabel('Amplitude')
+#         plt.show()
+
+def ch3(x,y,epsi):
+    Nx = len(x) # Length of x
+    Ny = len(y) # Length of y
+    Nh = Ny - Nx + 1 # Length of h
+
+    # Force x to be the same length as y
+    x = np.pad(x, (0, Ny - Nx))
+
+    # Deconvolution in frequency domain
+    X = fft(x)
+    Y = fft(y)
+    #if X is not 0:
+    H = Y / X
+    #else:
+     # H = 0
+    # Threshold to avoid blow ups of noise during inversion
+    ii = np.absolute(X) < epsi * max(np.absolute(X))
+    # for idx in range(len(ii)):
+    #     if ii[idx] is False:
+    #         H[idx] = 0
+    H[ii] = 0
+
+    h = np.real(ifft(H))    # ensure the result is real
+    #h = h[:Lhat]    # optional: truncate to length Lhat (L is not reliable?)
+    return h
+
+ref_sliced = ref[:,0]
+h=[]
+h1=ch3(audio_sliced0[1],ref[120000:150000,0],0.01)
+for i in range(5):
+    hi=abs(ch3(audio_sliced0[i],ref[120000:150000,0],0.01))
+    h.append(hi)
+    plt.plot(abs(h[i]))
+    plt.show()
+
