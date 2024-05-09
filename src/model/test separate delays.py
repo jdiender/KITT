@@ -55,13 +55,25 @@ class KITT:
         
 if __name__ == "__main__":
     kitt = KITT('COM3')
+    
+    #For determining the accuracy of the sensors, their maximal range, and the field of view (beam angle)
+    #To test the accuracy of the sensors make sure there are no other objects in sight, measure the distance from the left and from the right sensor to the object
+    #To test the maximal range make sure there are no other objects in sight, rerun until the sensor return 0
+    #To test the beam angle rerun a couple of times at different angles and note the distances from left and right
+    data = kitt.test_distance_with_object_placement()
+    print(data)
+     
+    #For testing the delay in python code and bluetooth
+    print("Testing the delay of the distance sensor")
+    start_time = time.time()
+    a=kitt.test_distance_with_object_placement()
+    stop_time = time.time() - start_time
+    print(stop_time)
+    
+    #For testing the delay in python code and bluetooth
     print("Starting distance measurement test with object placement...")
     measurement_data = kitt.test_bluetooth()
     print(measurement_data)
-    #kitt.test_beam_angle(kitt)
+    
+    
 
-    # Create a sample DataFrame
-    #df = pd.DataFrame(measurement_data)
-
-    # Save to a CSV file
-    #df.to_csv('measurements2_1.csv', index=False)

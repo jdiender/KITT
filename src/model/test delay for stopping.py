@@ -45,15 +45,15 @@ class KITT:
     def sensor_data(self):
         self.serial.write(b'Sd\n')
         data = self.serial.read_until(b'\x04').decode()
-        left_distance = int(data.split('USL')[1][:3])  # Assumes format USL###\n
-        right_distance = int(data.split('USR')[1][:3])  # Assumes format USR###\n
+        left_distance = int(data.split('USL')[1][:3])  #Seperate the disctance sensors fir the left sensor. Assumes format USL###\n
+        right_distance = int(data.split('USR')[1][:3])  #Seperate the disctance sensors fir the right sensor. Assumes format USR###\n
         return left_distance, right_distance
     
     def __del__(self):
         self.serial.close()
             
     def run_distance_measurement(self):
-        target_distance = 50  # Set this to a safe distance in cm before hitting the wall 
+        target_distance = 75  # Set this to a safe distance in cm before hitting the wall 
         try:
             while True:
                 left_distance, right_distance = self.sensor_data()
@@ -66,7 +66,7 @@ class KITT:
                     self.emergency_brake()
                     break 
                 else:
-                    self.set_speed(157) 
+                    self.set_speed(160) 
         finally:
             self.__del__() #break connection with KITT
             return  self.measurements  # Return the collected measurements   
@@ -92,7 +92,9 @@ def plot_distance_vs_time(measurements):
     
 if __name__ == "__main__":
     kitt = KITT('COM3')
+    #To test KITT for the overal delay in determining how far an object is, when it needs to stop and actually stopping
     data = kitt.run_distance_measurement()
+    #Plots the distance measurements vs the time. The velocity and cycle can be extracted.
     plot_distance_vs_time(kitt.measurements)
     kitt = KITT('COM3')
     kitt.serial.write(b'Sv\n')
