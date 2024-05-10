@@ -5,9 +5,55 @@ from scipy.fft import fft, ifft
 from scipy.signal import convolve, unit_impulse
 from scipy.signal import find_peaks
 
+def calculate_distances_for_channel_pairs(channels):
+    # load reference channel
+    _, ref = wavfile.read(r"C:\Users\naufa\OneDrive\Bureaublad\EPO4\student_recording\student_recording\reference.wav")
+
+    # crop channels in paramater `channels`
+    cropped_channels = crop_channels(channels)
+    # plt.plot(cropped_channels[0])
+    # plt.show()
+
+    # calculate impulse response for each channel
+    h = []
+    for i in range(5):
+        hi=abs(ch3(cropped_channels[i], ref[120000:150000,0], 0.01))
+        h.append(hi)
+
+    TDOA = []
+    for i in range(5):
+        for j in range(i + 1, 5):  # Ensure pairs are unique and not repeated
+            h0 = h[i]
+            h1 = h[j]            
+            dist = calc_distance(h0, h1)
+            TDOA.append((i+1, j+1, dist))
+            #print(f"TDOA from microphone {i+1} to microphone {j+1}: {dist} meter")
+    return TDOA
+
+def crop_channels(channels):
+    width = 10000
+    channels = [
+        channels[0],
+        channels[1],
+        channels[2],
+        channels[3],
+        channels[4]
+    ]
+    base_channel = channels[0] # determine the same offset for all channels
+    base_channel_tmp = base_channel[int(len(base_channel)/2):] # temporarily take the right part of the channel to avoid false peaks
+    base_peak = np.argmax(np.abs(base_channel_tmp)) + len(base_channel_tmp) # determine the midpoint of all channels
+    left_index = base_peak - width # offset from left
+    right_index = base_peak + width # offset from right
+
+    # fill cropped_channels with each individual channel of the corresponding recording
+    cropped_channels = []
+    for j in range(5):
+        cropped_channels.append(channels[j][left_index:right_index]) # gets emptied after out of scope
+    return cropped_channels
+
 Fs_RX = 44100
 def calc_distance(h0, h1):
-  return abs(np.argmax(h0) - np.argmax(h1)) / Fs_RX * 343
+  return (np.argmax(h0) - np.argmax(h1)) / Fs_RX * 343
 
 def ch3(x,y,epsi):
     Nx = len(x) # Length of x
@@ -45,7 +91,16 @@ def load(recording_number, channel_number):
              r"C:\Users\naufa\OneDrive\Bureaublad\EPO4\student_recording\student_recording\record_x232_y275.wav"]
     recording_name = audio_array[recording_number - 1]
     _, recording = wavfile.read(recording_name)
-    return recording[:, channel_number - 1]
+    if channel_number == -1:
+        return [
+            recording[:, 0],
+            recording[:, 1],
+            recording[:, 2],
+            recording[:, 3],
+            recording[:, 4]
+        ]
+    else:
+        return recording[:, channel_number - 1]
 
 def crop(recording):
     width = 10000

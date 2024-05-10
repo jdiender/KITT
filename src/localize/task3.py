@@ -49,7 +49,7 @@ uncropped_channels = [
     load(1,4)
 ]
 
-cropped_channels = cropped_channels_per_recording[0]
+#cropped_channels = cropped_channels_per_recording[0]
 h = []
 # absolute value of impulse response determined for recording 1 for all 5 channels
 for i in range(5):
@@ -64,7 +64,7 @@ def calculate_distances_for_channel_pairs():
             h1 = h[j]            
             time = calc_distance(h1, h0)
             TDOA.append((i, j, time))
-            print(f"TDOA from microphone {i} to microphone {j}: {time} meter")
+            print(f"TDOA from microphone {i+1} to microphone {j+1}: {time} meter")
     return TDOA
 
-calculate_distances_for_channel_pairs()
+#calculate_distances_for_channel_pairs()
