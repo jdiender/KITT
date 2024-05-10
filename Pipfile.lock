@@ -1,11 +1,11 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "4abc07e516d2a1a9b2d3c02e53c8acaa9802c5fed6c1b101615438bab04d835a"
+            "sha256": "f225f3c9cf718d7201eb1709282134c4bb752912058d9ff106dbf281037466b6"
         },
         "pipfile-spec": 6,
         "requires": {
-            "python_version": "3.12"
+            "python_version": "3.*"
         },
         "sources": [
             {
@@ -272,6 +272,7 @@
                 "sha256:fb44f53af0a62dc80bba4443d9b27f2fde6acfdac281d95bc872dc148a6509cc"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.9'",
             "version": "==3.8.4"
         },
         "numpy": {
@@ -314,6 +315,7 @@
                 "sha256:ffa75af20b44f8dba823498024771d5ac50620e6915abac414251bd971b4529f"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.9'",
             "version": "==1.26.4"
         },
         "packaging": {
@@ -434,6 +436,7 @@
                 "sha256:ff99b4f91aa8eb60510d5889faad07116d3340041916e46c07d519f7cad344e1"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.7'",
             "version": "==5.15.10"
         },
         "pyqt5-qt5": {
@@ -517,6 +520,7 @@
                 "sha256:dcbb9ea49b0167de4167c40eeee6e167caeef11effb0670b554d10b1e693a8b9"
             ],
             "index": "pypi",
+            "markers": "python_version >= '3.9'",
             "version": "==1.13.0"
         },
         "six": {
