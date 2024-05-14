@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 # Constants
 m = 5.6          # mass of the car in kg
-b = 5            # drag coefficient, possibly adjust this if the velocity is too high
+b = 5            # drag coefficient
 Fa_max = 10      # maximum force from the engine in N
 Fb_max = 14      # maximum braking force in N
 dt = 0.01        # time step in seconds
@@ -23,11 +23,11 @@ def simulate(F_max, initial_velocity, mode='acceleration'):
         Fd = b * abs(v[i-1])  # use abs to ensure drag is always opposite to motion
         
         if mode == 'deceleration':
-            # During deceleration, add drag to braking force to increase total decelerating force
-            F_net = -Fb_max + Fd  # Notice the drag reduces the effect of braking
+            # During deceleration, both braking and drag forces slow down the car
+            F_net = -F_max + Fd  # Notice the drag adds to the braking force
         else:
             # During acceleration, subtract drag from engine force
-            F_net = Fa_max - Fd
+            F_net = F_max - Fd
 
         # Acceleration calculation
         a = F_net / m
@@ -40,8 +40,7 @@ def simulate(F_max, initial_velocity, mode='acceleration'):
 v_accel, z_accel = simulate(Fa_max, 0, mode='acceleration')
 
 # Simulation for Deceleration from a starting speed
-initial_speed = 1.5  # Adjusted from 20 m/s to 1.5 m/s for deceleration
-v_decel, z_decel = simulate(-Fb_max, initial_speed, mode='deceleration')
+v_decel, z_decel = simulate(Fb_max, v_accel[-1], mode='deceleration')
 
 # Plotting
 plt.figure(figsize=(12, 10))
@@ -51,24 +50,28 @@ plt.plot(t, v_accel, 'r')
 plt.title('Velocity vs Time (Acceleration)')
 plt.xlabel('Time (s)')
 plt.ylabel('Velocity (m/s)')
-
+plt.grid(True)
+    
 plt.subplot(2, 2, 2)
 plt.plot(t, z_accel, 'g')
 plt.title('Position vs Time (Acceleration)')
 plt.xlabel('Time (s)')
 plt.ylabel('Position (m)')
+plt.grid(True)
 
 plt.subplot(2, 2, 3)
 plt.plot(t, v_decel, 'b')
 plt.title('Velocity vs Time (Deceleration)')
 plt.xlabel('Time (s)')
 plt.ylabel('Velocity (m/s)')
+plt.grid(True)
 
 plt.subplot(2, 2, 4)
 plt.plot(t, z_decel, 'orange')
 plt.title('Position vs Time (Deceleration)')
 plt.xlabel('Time (s)')
 plt.ylabel('Position (m)')
+plt.grid(True)
 
 plt.tight_layout()
 plt.show()
