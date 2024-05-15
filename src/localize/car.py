@@ -4,6 +4,8 @@ import time
 import pyaudio
 import numpy as np
 import matplotlib.pyplot as plt
+from localization import localization
+import scipy
 
 class KITT:
     def __init__(self, port, baudrate=115200):
@@ -11,8 +13,8 @@ class KITT:
         self.speed = 150
         self.angle = 150
         self.carrier_frequency = (10000).to_bytes(2, byteorder='big')
-        self.bit_frequency = (3500).to_bytes(2, byteorder='big')
-        self.repetition_count = (1250).to_bytes(2, byteorder='big')
+        self.bit_frequency = (5000).to_bytes(2, byteorder='big')
+        self.repetition_count = (2500).to_bytes(2, byteorder='big')
         self.code = 0xDEADBEEF.to_bytes(4, byteorder='big')
         # state variables such as speed, angle are defined here
     
@@ -103,15 +105,16 @@ class KITT:
             print(f"Data from microphone {idx + 1}: {channel_samples[:10]}...")  # Print first 10 samples
 
         # Plotting the data for each channel
-        plt.figure(figsize=(15, 10))  # Set the figure size
-        for i in range(CHANNELS):
-            plt.subplot(CHANNELS, 1, i + 1)  # Create a subplot for each channel
-            plt.plot(channel_data[i])
-            plt.title(f'Channel {i + 1}')
-            plt.xlabel('Sample Number')
-            plt.ylabel('Amplitude')
-        plt.tight_layout()  # Adjust subplots to fit into figure areas
-        plt.show()
+        #plt.figure(figsize=(15, 10))  # Set the figure size
+        #for i in range(CHANNELS):
+            #plt.subplot(CHANNELS, 1, i + 1)  # Create a subplot for each channel
+            #plt.plot(channel_data[i])
+            #plt.title(f'Channel {i + 1}')
+            #plt.xlabel('Sample Number')
+            #plt.ylabel('Amplitude')
+        #plt.tight_layout()  # Adjust subplots to fit into figure areas
+        #plt.show()
+        return channel_data
 
     def __del__(self):
         self.serial.close()
@@ -196,6 +199,11 @@ if __name__ == "__main__":
     #commands = [('a',0.1), ('w', 1), ('q',0.01), ('w',0.01), ('d', 1), ('q',0.01),('x',0.01)]
     #execute_commands(kitt, commands)
     recording = kitt.record()
+    scipy.io.wavfile.write("test1.wav", rate= 48000, data=np.array(recording[0]))
+    print(recording)
+    localize = localization(recording)
+    location = localize.locate()
+    print(location)
     kitt.serial.close()
     # use kitt.record for audio
     # use wasd to steer kitt

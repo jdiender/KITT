@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 from scipy.io import wavfile
 from scipy.fft import fft, ifft
 
-mic_xcoordinates = np.array([0, 0, 4.8, 4.8, 0])
-mic_ycoordinates = np.array([0, 4.8, 0, 4.8, 2.4])
+mic_xcoordinates = np.array([0, 4.8, 0, 4.8, 0])
+mic_ycoordinates = np.array([0, 0, 4.8, 4.8, 2.4])
 mic_zcoordinates = np.array([0.50, 0.50, 0.50, 0.50, 0.8])
 
 def locate(recording):
@@ -46,7 +46,7 @@ def locate(recording):
 
 def calculate_distances_for_channel_pairs(channels):
     # load reference channel
-    _, ref = wavfile.read(r"C:\Users\naufa\OneDrive\Bureaublad\EPO4\student_recording\student_recording\reference.wav")
+    _, ref = wavfile.read(r"C:\Users\julie\Documents\TU\Y2 23-24\EPO4Git\recordings\student_recording\reference.wav")
 
     # crop channels in paramater `channels`
     cropped_channels = crop_channels(channels)

@@ -8,6 +8,3 @@ class localization:
         locations = locate(self.recording).flatten()
         locations = (locations[0], locations[1])
         return locations
-
-localize = localization(load(3, -1))
-print(localize.locate())

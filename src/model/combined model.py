@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import keyboard
 import math
 
 class KITTmodel:
@@ -23,53 +22,61 @@ class KITTmodel:
             F_net = 10 - Fd
         a = F_net / m  # determine acceleration
         self.v = self.v0 + a * self.dt  # determine new velocity
+        if self.v > 1:
+            self.v = self.v0  # maximum speed is set at 1m/s which is equal to a speed setting of 160
         return self.v
     
     def direction(self, alpha):
         theta = ((self.v * math.sin(math.radians(alpha))) / self.L) * self.dt  # angle over which the car turns
         r = np.array([[math.cos(theta), -math.sin(theta)], [math.sin(theta), math.cos(theta)]])  # determine the rotation vector
-        self.d = np.dot(r, self.d) #calculate the new direction vector
+        self.d = np.dot(r, self.d)  # calculate the new direction vector
         
     def position(self, mode, alpha):
         self.velocity(mode)
         self.direction(alpha)
-        self.z = self.z + self.v * self.dt * self.d #Determine the new position of the car
+        self.z = self.z + self.v * self.dt * self.d  # determine the new position of the car
         return self.z
     
-def wasd(kitt):
-    plt.ion()
-    fig, ax = plt.subplots()
+def wasd(kitt, command=None):
+    pos = np.array([0, 0])
+    if command:
+        key = command
+    else:
+        key = input("Enter command: ")  # using input instead of keyboard for simplicity
+    if key == 'w':  # Forward
+        pos = kitt.position("acceleration", 0)
+    elif key == 'q':  # Stop
+        pos = kitt.position("deceleration", 0)
+    elif key == 'a':  # left forward
+        pos = kitt.position("acceleration", -24.9)
+    elif key == 's':  # straight
+        pos = kitt.position("acceleration", 0)
+    elif key == 'd':  # right
+        pos = kitt.position("acceleration", 24.9)
+    elif key == 'z':  # Backwards 
+        kitt.velocity("deceleration")
+        pos = kitt.z  # Maintain current position for plotting
+    return pos
+        
+def execute_commands(commands):
+    kitt = KITTmodel()
     x_data, y_data = [], []
-
-    try:
-        while True:
-            key = keyboard.read_key()
-            if key == 'w':  # Forward
-                pos = kitt.position("acceleration", 0)
-            elif key == 'q':  # Stop
-                pos = kitt.position("deceleration", 0)
-            elif key == 'a':  # left
-                pos = kitt.position("acceleration", -24.9)
-            elif key == 's':  # straight
-                pos = kitt.position("acceleration", 0)
-            elif key == 'd':  # right
-                pos = kitt.position("acceleration", 24.9)
-            elif key == 'z':  # Backwards 
-                kitt.velocity("deceleration")
-                pos = kitt.z  # Maintain current position for plotting
-            elif key == 'x':
-                break  # Exit loop
+    for command, duration in commands:
+        i = int(duration / 0.01)
+        for _ in range(i):
+            pos = wasd(kitt, command)
             x_data.append(pos[0])
             y_data.append(pos[1])
-            ax.plot(x_data, y_data, color='blue')
-            fig.canvas.draw()
-            fig.canvas.flush_events()
+    return x_data, y_data
 
-    finally:
-        kitt.v = 0
-        plt.ioff()
-        plt.show()
-        
+def plot(x, y):
+    plt.plot(x, y)
+    plt.xlabel('X Position')
+    plt.ylabel('Y Position')
+    plt.title('KITT Model Position')
+    plt.show()
+           
 if __name__ == "__main__":
-    kitt = KITTmodel()
-    wasd(kitt)
+    commands = [('a', 4), ('q', 0.01),  ('w', 0.01), ('d', 1),('q', 1)]
+    x_data, y_data = execute_commands(commands)
+    plot(x_data, y_data)
