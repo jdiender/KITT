@@ -2,8 +2,47 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
 from scipy.fft import fft, ifft
-from scipy.signal import convolve, unit_impulse
-from scipy.signal import find_peaks
+
+mic_xcoordinates = np.array([0, 0, 4.8, 4.8, 0])
+mic_ycoordinates = np.array([0, 4.8, 0, 4.8, 2.4])
+mic_zcoordinates = np.array([0.50, 0.50, 0.50, 0.50, 0.8])
+
+def locate(recording):
+    # calculate TDOA pairs in distance
+    r_ij = calculate_distances_for_channel_pairs(recording)
+    
+    pair = []
+    x_temp = np.zeros(len(r_ij))
+    for j in range(5):
+        for k in range(j+1,5):
+                #for i in range(len(r_ij)):
+                x_temp = mic_xcoordinates[k] - mic_xcoordinates[j]
+                y_temp = mic_ycoordinates[k] - mic_ycoordinates[j]
+                pair.append((j+1,k+1,x_temp,y_temp))
+    
+    # Assuming r_ij is a 1D array with the distances for each pair in the same order as 'pair'
+    # Initialize an empty list to hold the rows of the new matrix
+    matrix = []
+    for i in range(10):
+        row = [2*(pair[i][2]), 2*(pair[i][3])] + [0] * 4
+        row[r_ij[i][1]] = -2 * r_ij[i][2]
+        matrix.append(row)
+
+    # righthand-side of the matrix
+    matrix2 = []
+    for i in range(10):
+        r = r_ij[i][2]**2
+        x_left = (mic_xcoordinates[r_ij[i][0]-1]**2 + mic_ycoordinates[r_ij[i][0]-1]**2)
+        x_right = (mic_xcoordinates[r_ij[i][1]-1]**2 + mic_ycoordinates[r_ij[i][1]-1]**2 )
+        value = r - x_left + x_right
+        matrix2.append(value)
+    
+    A = np.array(matrix)
+    B = np.array(matrix2).reshape(-1, 1)
+
+    Y = np.matmul(np.linalg.pinv(A), B)
+
+    return Y
 
 def calculate_distances_for_channel_pairs(channels):
     # load reference channel
@@ -11,8 +50,6 @@ def calculate_distances_for_channel_pairs(channels):
 
     # crop channels in paramater `channels`
     cropped_channels = crop_channels(channels)
-    # plt.plot(cropped_channels[0])
-    # plt.show()
 
     # calculate impulse response for each channel
     h = []
@@ -108,8 +145,4 @@ def crop(recording):
     recording_tmp = recording[int(len(recording)/2):]
     peak = np.argmax(np.abs(recording_tmp)) + len(recording_tmp) 
     recording = recording[peak-width:peak+width]
-    # peak2 = np.argmax(np.abs(recording))
-    # plt.plot(peak2,recording[peak2],'ro')
-    # plt.plot(recording)
-    # plt.show()
     return recording
