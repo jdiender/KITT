@@ -8,7 +8,7 @@ from scipy.linalg import pinv
 from task1 import h
 from task1 import ch3
 from functions import  calculate_distances_for_channel_pairs
-from functions import load
+from functions import load, locate
 
 Fs_RX = 44100
 sampled_rate2,ref=wavfile.read(r"C:\Users\naufa\OneDrive\Bureaublad\EPO4\student_recording\student_recording\reference.wav")
@@ -38,9 +38,6 @@ for z in range(7):
     # Assuming r_ij is a 1D array with the distances for each pair in the same order as 'pair'
     # Initialize an empty list to hold the rows of the new matrix
     matrix = []
-
-
-    matrix = []
     for i in range(10):
         row = [2*(pair[i][2]), 2*(pair[i][3])] + [0] * 4
         row[r_ij[i][1]] = -2 * r_ij[i][2]
@@ -62,4 +59,10 @@ for z in range(7):
     B = np.array(matrix2).reshape(-1, 1)
 
     Y = np.matmul(np.linalg.pinv(A), B)
-    print("DISTANCES ARE ", Y[0]-recording_x[z], Y[1]-recording_y[z])
+    #print("DISTANCES ARE ", Y[0]-recording_x[z], Y[1]-recording_y[z])
+    # print(np.array(r_ij))
+    # print()
+
+print(locate(
+     load(2, -1)
+))

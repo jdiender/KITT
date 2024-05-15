@@ -33,3 +33,18 @@ for i in range(len(mic_xcoordinates)):
 # enes->3; naufal->1
 # enes->4; naufal->2/3
 # enes->5; naufal->4
+# Given beacon at location 0.64; 0.40
+beacon_x = 0.64
+beacon_y = 0.40
+
+# Calculate distances to the beacon
+distances_to_beacon = np.zeros((len(mic_xcoordinates), 1))
+
+for i in range(len(mic_xcoordinates)):
+    distances_to_beacon[i] = np.sqrt((mic_xcoordinates[i] - beacon_x)**2 + (mic_ycoordinates[i] - beacon_y)**2)
+
+for i in range(5):
+    for j in range (i+1, 5):
+        print(f"Distance from Microphone {i+1} to Microphone {j+1}: {distances_to_beacon[i]-distances_to_beacon[j]:.2f} meters")
+
+    print()  # Blank line for readability

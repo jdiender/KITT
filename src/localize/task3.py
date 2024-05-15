@@ -13,7 +13,7 @@ sampled_rate2,ref=wavfile.read(r"C:\Users\naufa\OneDrive\Bureaublad\EPO4\student
 
 width = 10000
 cropped_channels_per_recording = []
-for i in range(7):
+for i in range(1):
     channel = [
         load(i+1, 1),
         load(i+1, 2),
@@ -21,6 +21,11 @@ for i in range(7):
         load(i+1, 4),
         load(i+1, 5)
     ]
+    plt.plot(channel[0])
+    plt.title("audio recording 1 channel 1 uncropped")
+    plt.xlabel("index[n]")
+    plt.ylabel("amplitude")
+    plt.show()
     base_channel = load(i+1, 1) # determine the same offset for all channels
     base_channel_tmp = base_channel[int(len(base_channel)/2):] # temporarily take the right part of the channel to avoid false peaks
     base_peak = np.argmax(np.abs(base_channel_tmp)) + len(base_channel_tmp) # determine the midpoint of all channels
@@ -31,15 +36,19 @@ for i in range(7):
     cropped_channels = []
     for j in range(5):
         cropped_channels.append(channel[j][left_index:right_index]) # gets emptied after out of scope
+       
 
     cropped_channels_per_recording.append(cropped_channels) # in order to retain the cropped channels for all recordings
 
 # 
-# for cropped_chan in cropped_channels:
-#     plt.plot(cropped_chan)
-#     peak2 = np.argmax(np.abs(cropped_chan))
-#     plt.plot(peak2,cropped_chan[peak2],'ro')
-#     plt.show()
+for cropped_chan in cropped_channels:
+    plt.plot(cropped_chan)
+    peak2 = np.argmax(np.abs(cropped_chan))
+    plt.title("audio recording 1 channel 1 cropped ")
+    plt.xlabel("index[n]")
+    plt.ylabel("amplitude")
+    plt.plot(peak2,cropped_chan[peak2],'ro')
+    plt.show()
 
 uncropped_channels = [
     load(1,1),
@@ -55,6 +64,13 @@ h = []
 for i in range(5):
     hi=abs(ch3(cropped_channels[i],ref[120000:150000,0],0.01))
     h.append(hi)
+    print(np.argmax(hi))
+    # plt.plot(hi)
+    # plt.plot(np.argmax(hi), hi[np.argmax(hi)],'ro')
+    # plt.title(f"Recording 1 channel {i+1}")
+    # plt.xlabel("index[n]")
+    # plt.ylabel("response")
+    # plt.show()
 # used to fill the TDOA matrix in order to see time difference of arrival between all microphones
 def calculate_distances_for_channel_pairs():
     TDOA = []
