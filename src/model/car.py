@@ -54,7 +54,11 @@ class KITT:
             self.set_speed(150) 
         else: 
             self.set_speed(150) 
-    
+            
+    def left_forward(self):
+        kitt.set_angle(200)
+        kitt.set_speed(160)
+        
     def record(self):
         # Constants
         FORMAT = pyaudio.paInt16
@@ -153,27 +157,25 @@ def execute_commands(kitt, commands):
             key, duration = command
         else:
             key, duration = command, None
-
-        if  key == 'q':  # Stop
-            kitt.stop()
-        elif key == 'a':  # Left forward
+            
+        if  key == 'a':  # Left forward
             kitt.set_angle(200)
-            kitt.set_speed(160)
+            kitt.set_speed(163)     
         elif key == 's':  # Straight
             kitt.set_angle(150)
             kitt.set_speed(160)
         elif key == 'd':  # Right forward
+            kitt.set_speed(163)
             kitt.set_angle(100)
-            kitt.set_speed(160)
         elif key == 'z':  # Left Backwards 
             kitt.set_angle(200)
-            kitt.set_speed(138)
+            kitt.set_speed(135)
         elif key == 'x':  # straight Backwards 
             kitt.set_angle(150)
             kitt.set_speed(138)
         elif key == 'c':  # right Backwards 
             kitt.set_angle(100)
-            kitt.set_speed(138)    
+            kitt.set_speed(135)    
         elif key == 'e':  # Brakes and goes opposite direction for a while
             kitt.emergency_brake()
         elif key == 'p':  # Play audio beacon
@@ -182,20 +184,20 @@ def execute_commands(kitt, commands):
             kitt.set_audio_beacon_off()
         elif key == 'l':
             kitt.record()
-        elif key == 'q':
-            break  # Exit loop
+        elif key == 'q':  # Stop
+            kitt.stop()
+            break
 
         if duration:
             time.sleep(duration)
 
-    kitt.stop()
-
 if __name__ == "__main__":
     kitt = KITT('COM3')
     #use code below to execute commands
-    #commands = [('a',0.1), ('w', 1), ('q',0.01), ('w',0.01), ('d', 1), ('q',0.01),('x',0.01)]
-    #execute_commands(kitt, commands)
-    recording = kitt.record()
+    commands = [('z', 4), ('c', 1), ('i', 1)]
+    execute_commands(kitt, commands)
+    #wasd(kitt)
+    #recording = kitt.record()
     kitt.serial.close()
     # use kitt.record for audio
     # use wasd to steer kitt

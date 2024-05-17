@@ -91,7 +91,10 @@ class KITT:
         pyaudio_handle.terminate()
         print("Recording stopped.")
         self.set_audio_beacon_off()
-        
+        print(data)
+        file1 = open('myfile.txt', 'w')
+        file1.write(str(data))
+        file1.close()
         # Assuming interlaced audio data for 5 channels
         # Reshape the data into 5 separate streams
         if data.shape[0] % CHANNELS == 0:
@@ -104,16 +107,16 @@ class KITT:
         for idx, channel_samples in enumerate(channel_data):
             print(f"Data from microphone {idx + 1}: {channel_samples[:10]}...")  # Print first 10 samples
 
-        # Plotting the data for each channel
-        #plt.figure(figsize=(15, 10))  # Set the figure size
-        #for i in range(CHANNELS):
-            #plt.subplot(CHANNELS, 1, i + 1)  # Create a subplot for each channel
-            #plt.plot(channel_data[i])
-            #plt.title(f'Channel {i + 1}')
-            #plt.xlabel('Sample Number')
-            #plt.ylabel('Amplitude')
-        #plt.tight_layout()  # Adjust subplots to fit into figure areas
-        #plt.show()
+        #Plotting the data for each channel
+        plt.figure(figsize=(15, 10))  # Set the figure size
+        for i in range(CHANNELS):
+            plt.subplot(CHANNELS, 1, i + 1)  # Create a subplot for each channel
+            plt.plot(channel_data[i])
+            plt.title(f'Channel {i + 1}')
+            plt.xlabel('Sample Number')
+            plt.ylabel('Amplitude')
+        plt.tight_layout()  # Adjust subplots to fit into figure areas
+        plt.show()
         return channel_data
 
     def __del__(self):
@@ -199,7 +202,7 @@ if __name__ == "__main__":
     #commands = [('a',0.1), ('w', 1), ('q',0.01), ('w',0.01), ('d', 1), ('q',0.01),('x',0.01)]
     #execute_commands(kitt, commands)
     recording = kitt.record()
-    scipy.io.wavfile.write("test1.wav", rate= 48000, data=np.array(recording[0]))
+    #scipy.io.wavfile.write("ref.wav", rate= 48000, data=np.array(recording[0]))
     print(recording)
     localize = localization(recording)
     location = localize.locate()

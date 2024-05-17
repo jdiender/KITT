@@ -18,13 +18,14 @@ def locate(recording):
                 #for i in range(len(r_ij)):
                 x_temp = mic_xcoordinates[k] - mic_xcoordinates[j]
                 y_temp = mic_ycoordinates[k] - mic_ycoordinates[j]
-                pair.append((j+1,k+1,x_temp,y_temp))
+                z_temp = mic_zcoordinates[k] - mic_zcoordinates[j]
+                pair.append((j+1,k+1,x_temp,y_temp,z_temp))
     
     # Assuming r_ij is a 1D array with the distances for each pair in the same order as 'pair'
     # Initialize an empty list to hold the rows of the new matrix
     matrix = []
     for i in range(10):
-        row = [2*(pair[i][2]), 2*(pair[i][3])] + [0] * 4
+        row = [2*(pair[i][2]), 2*(pair[i][3]),2*pair[i][4]] + [0] * 4
         row[r_ij[i][1]] = -2 * r_ij[i][2]
         matrix.append(row)
 
@@ -32,8 +33,8 @@ def locate(recording):
     matrix2 = []
     for i in range(10):
         r = r_ij[i][2]**2
-        x_left = (mic_xcoordinates[r_ij[i][0]-1]**2 + mic_ycoordinates[r_ij[i][0]-1]**2)
-        x_right = (mic_xcoordinates[r_ij[i][1]-1]**2 + mic_ycoordinates[r_ij[i][1]-1]**2 )
+        x_left = (mic_xcoordinates[r_ij[i][0]-1]**2 + mic_ycoordinates[r_ij[i][0]-1]**2 + mic_zcoordinates[r_ij[i][0]-1]**2)
+        x_right = (mic_xcoordinates[r_ij[i][1]-1]**2 + mic_ycoordinates[r_ij[i][1]-1]**2 + mic_zcoordinates[r_ij[i][1]-1]**2)
         value = r - x_left + x_right
         matrix2.append(value)
     
@@ -46,7 +47,8 @@ def locate(recording):
 
 def calculate_distances_for_channel_pairs(channels):
     # load reference channel
-    _, ref = wavfile.read(r"C:\Users\julie\Documents\TU\Y2 23-24\EPO4Git\recordings\student_recording\reference.wav")
+    _, ref = wavfile.read(r"C:\Users\julie\Documents\TU\Y2 23-24\EPO4Git\ref1.wav")
+    ref = ref[12500:27500]
 
     # crop channels in paramater `channels`
     cropped_channels = crop_channels(channels)
@@ -54,7 +56,7 @@ def calculate_distances_for_channel_pairs(channels):
     # calculate impulse response for each channel
     h = []
     for i in range(5):
-        hi=abs(ch3(cropped_channels[i], ref[120000:150000,0], 0.01))
+        hi=abs(ch3(cropped_channels[i], ref, 0.01))
         h.append(hi)
 
     TDOA = []
@@ -98,8 +100,11 @@ def ch3(x,y,epsi):
     Nh = Ny - Nx + 1 # Length of h
 
     # Force x to be the same length as y
-    x = np.pad(x, (0, Ny - Nx))
-
+    if Nx < Ny: 
+        x = np.pad(x, (0, Ny - Nx))
+    else:
+        y = np.pad(y, (0, Nx - Ny))
+    
     # Deconvolution in frequency domain
     X = fft(x)
     Y = fft(y)
