@@ -194,7 +194,7 @@ def execute_commands(kitt, commands):
 if __name__ == "__main__":
     kitt = KITT('COM3')
     #use code below to execute commands
-    commands = [('z', 4), ('c', 1), ('i', 1)]
+    commands = [('s', 0.01), ('a', 4),  ('e', 1)]
     execute_commands(kitt, commands)
     #wasd(kitt)
     #recording = kitt.record()

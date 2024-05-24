@@ -56,14 +56,14 @@ class KITT:
             
     def run_distance_measurement(self):
         current_time = time.time()
-        t_end = current_time + 10
+        t_end = current_time + 5
         
         try:
             while time.time() < t_end:
                 # Move sensor data collection inside the loop to update readings continuously
                 left_distance, right_distance, voltage = self.sensor_data()
                 current_time = time.time()  # Update current time inside the loop
-                self.set_speed(158)  # Assuming you want to maintain this speed during the measurement period
+                self.set_speed(160)  # Assuming you want to maintain this speed during the measurement period
                 self.measurements.append((current_time, left_distance, right_distance, voltage))  # Log the time and distance
         finally:
                 self.emergency_brake()
@@ -126,11 +126,11 @@ def plot_distance_vs_time(measurements):
 if __name__ == "__main__":
     kitt = KITT('COM3')
     #To test KITT for the overal delay in determining how far an object is, when it needs to stop and actually stopping
-    data = kitt.run_distance_measurement()
+    #data = kitt.run_distance_measurement()
     #Plots the distance measurements vs the time. The velocity and cycle can be extracted.
-    plot_distance_vs_time(kitt.measurements)
-    kitt = KITT('COM3')
-    kitt.serial.write(b'Sv\n')
-    data = kitt.serial.read_until(b'\x04')
+    #plot_distance_vs_time(kitt.measurements)
+    #kitt = KITT('COM3')
+    #kitt.serial.write(b'Sv\n')
+    data = kitt.sensor_data()
     kitt.serial.close()
     print(data) 

@@ -55,7 +55,7 @@ class KITT:
         self.serial.close()
 
     def run_distance_measurement(self):
-        target_distance = 85  # Set this to a safe distance in cm before hitting the wall
+        target_distance = 110  # Set this to a safe distance in cm before hitting the wall
         try:
             while True:
                 left_distance, right_distance = self.sensor_data()
@@ -68,7 +68,7 @@ class KITT:
                     self.emergency_brake()
                     break
                 else:
-                    self.set_speed(160)
+                    self.set_speed(165)
         finally:
             self.__del__()  # break connection with KITT
             return self.measurements  # Return the collected measurements
@@ -98,30 +98,42 @@ def plot_distance_and_velocity(measurements, velocities):
     times = [t - start_time for t in times]
     velocity_times = [t - start_time for t in velocity_times]
 
-    fig, ax1 = plt.subplots(figsize=(10, 5))
 
-    color = 'tab:blue'
-    ax1.set_xlabel('Time (seconds)')
-    ax1.set_ylabel('Distance (cm)', color=color)
-    ax1.plot(times, left_distances, marker='o', linestyle='-', color='blue', label='Left Sensor Distance')
-    ax1.plot(times, right_distances, marker='o', linestyle='-', color='red', label='Right Sensor Distance')
-    ax1.tick_params(axis='y', labelcolor=color)
-    ax1.legend(loc='upper left')
-    
-    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
-
-    color = 'tab:green'
-    ax2.set_ylabel('Velocity (cm/s)', color=color)  # we already handled the x-label with ax1
-    ax2.plot(velocity_times, left_velocities, marker='x', linestyle='--', color='green', label='Left Sensor Velocity')
-    ax2.plot(velocity_times, right_velocities, marker='x', linestyle='--', color='purple', label='Right Sensor Velocity')
-    ax2.tick_params(axis='y', labelcolor=color)
-    ax2.legend(loc='upper right')
-
-    fig.tight_layout()  # otherwise the right y-label is slightly clipped
-    plt.title('Time vs. Distance and Velocity Measurement of KITT')
+ 
+    plt.figure(figsize=(10, 10))
+    plt.subplot(4, 2, 1)
+    plt.plot(times, left_distances, marker='o', linestyle='-', color='blue', label='Left Sensor')
+    plt.title('Time vs. Distance Measurement of KITT')
+    plt.ylabel('Distance (cm)')
+    plt.legend()
     plt.grid(True)
-    plt.show()
 
+    plt.subplot(4, 2, 2)
+    plt.plot(times, right_distances, marker='o', linestyle='-', color='red', label='Right Sensor')
+    plt.title('Time vs. Distance Measurement of KITT')
+    plt.ylabel('Distance (cm)')
+    plt.legend()
+    plt.grid(True)
+
+    plt.subplot(4, 2, 3)
+    plt.plot(times, left_velocities, marker='o', linestyle='-', color='green', label='Voltage')
+    plt.title('Voltage vs. Time Measurement of KITT')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Voltage (V)')
+    plt.ylim(0, 20)  # Set y-axis to range from 0 to 20 volts
+    plt.legend()
+    plt.grid(True)
+
+    plt.subplot(4, 2, 4)
+    plt.plot(times, right_velocities, marker='o', linestyle='-', color='green', label='Velocity')
+    plt.title('Velocity vs. Time Measurement of KITT')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Velocity (cm/s)')
+    plt.legend()
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.show()
 if __name__ == "__main__":
     kitt = KITT('COM3')
     # To test KITT for the overall delay in determining how far an object is, when it needs to stop and actually stopping

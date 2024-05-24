@@ -46,7 +46,7 @@ class KITT:
     
     def test_bluetooth(self):        
         start_time = time.time()
-        self.serial.write(b'Sv\n')
+        self.serial.write(b'sV\n')
         data = self.serial.read_until(b'\x04')
         stop_time = time.time() - start_time
         return(data, stop_time)
@@ -60,15 +60,15 @@ if __name__ == "__main__":
     #To test the accuracy of the sensors make sure there are no other objects in sight, measure the distance from the left and from the right sensor to the object
     #To test the maximal range make sure there are no other objects in sight, rerun until the sensor return 0
     #To test the beam angle rerun a couple of times at different angles and note the distances from left and right
-    data = kitt.test_distance_with_object_placement()
-    print(data)
+    #data = kitt.test_distance_with_object_placement()
+    #print(data)
      
     #For testing the delay in python code and bluetooth
-    print("Testing the delay of the distance sensor")
-    start_time = time.time()
-    a=kitt.test_distance_with_object_placement()
-    stop_time = time.time() - start_time
-    print(stop_time)
+    #print("Testing the delay of the distance sensor")
+    #start_time = time.time()
+    #a=kitt.test_distance_with_object_placement()
+    #stop_time = time.time() - start_time
+    #print(stop_time)
     
     #For testing the delay in python code and bluetooth
     print("Starting distance measurement test with object placement...")

@@ -96,6 +96,6 @@ def plot(x, y):
     plt.show()
            
 if __name__ == "__main__":
-    commands = [('z', 4), ('c', 1), ('i', 1)]
+    commands = [('s', 0.01), ('a', 4), ('e', 1)]
     x_data, y_data = execute_commands(commands)
     plot(x_data, y_data)

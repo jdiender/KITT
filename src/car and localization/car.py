@@ -108,15 +108,15 @@ class KITT:
             print(f"Data from microphone {idx + 1}: {channel_samples[:10]}...")  # Print first 10 samples
 
         #Plotting the data for each channel
-        plt.figure(figsize=(15, 10))  # Set the figure size
-        for i in range(CHANNELS):
-            plt.subplot(CHANNELS, 1, i + 1)  # Create a subplot for each channel
-            plt.plot(channel_data[i])
-            plt.title(f'Channel {i + 1}')
-            plt.xlabel('Sample Number')
-            plt.ylabel('Amplitude')
-        plt.tight_layout()  # Adjust subplots to fit into figure areas
-        plt.show()
+        #plt.figure(figsize=(15, 10))  # Set the figure size
+        #for i in range(CHANNELS):
+         #   plt.subplot(CHANNELS, 1, i + 1)  # Create a subplot for each channel
+          #  plt.plot(channel_data[i])
+           # plt.title(f'Channel {i + 1}')
+            #plt.xlabel('Sample Number')
+            #plt.ylabel('Amplitude')
+        #plt.tight_layout()  # Adjust subplots to fit into figure areas
+        #plt.show()
         return channel_data
 
     def __del__(self):
