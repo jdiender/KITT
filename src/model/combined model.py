@@ -8,8 +8,8 @@ class KITTmodel:
         self.v = 0
         self.dt = 0.01
         self.L = 0.335
-        self.z = np.array([0, 0])
-        self.d = np.array([0, 1])
+        self.z = np.array([0, 0]) #position
+        self.d = np.array([0, 1]) #direction
         self.angle = 0
 
     def velocity(self, mode):
@@ -38,8 +38,8 @@ class KITTmodel:
         self.d = np.dot(r, self.d)  # calculate the new direction vector
         
     def position(self, mode, alpha):
-        self.velocity(mode)
-        self.direction(alpha)
+        self.velocity(mode) #calculate the velocity
+        self.direction(alpha) #determine the directionspee
         print(self.v)
         self.z = self.z + self.v * self.dt * self.d  # determine the new position of the car
         return self.z
@@ -62,13 +62,13 @@ def wasd(kitt, command=None):
         kitt.angle = 0
         pos = kitt.position("acceleration", kitt.angle)
     elif key == 'd':  # right
-        kitt.angle = 24.9
+        kitt.angle = 24.3
         pos = kitt.position("acceleration", kitt.angle)
     elif key == 'x':  # straight Backwards 
         kitt.angle = 0
         pos = kitt.position("deceleration", kitt.angle)
     elif key == 'c':  # right Backwards 
-        kitt.angle = 24.9
+        kitt.angle = 24.3
         pos = kitt.position("deceleration", kitt.angle)
     elif key == 'z':  # Left Backwards 
         kitt.angle = -24.9
@@ -90,8 +90,8 @@ def plot(x, y):
     plt.plot(x, y)
     plt.xlabel('X Position')
     plt.ylabel('Y Position')
-    plt.xlim(-2.5,5)
-    plt.ylim(-2.5,5)
+    plt.xlim(-2.5,2.5)
+    plt.ylim(-2.5,2.5)
     plt.title('KITT Model Position')
     plt.show()
            
