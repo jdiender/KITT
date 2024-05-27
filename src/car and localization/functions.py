@@ -5,8 +5,8 @@ from scipy.fft import fft, ifft
 
 mic_xcoordinates = np.array([0, 4.8, 0, 4.8, 0])
 mic_ycoordinates = np.array([0, 0, 4.8, 4.8, 2.4])
-mic_zcoordinates = np.array([0.50, 0.50, 0.50, 0.50, 0.8])
-
+mic_zcoordinates = np.array([0.50, 0.50, 0.50, 0.50, 0.8])-0.27
+#mic_zcoordinates = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
 def locate(recording):
     # calculate TDOA pairs in distance
     r_ij = calculate_distances_for_channel_pairs(recording)
@@ -25,7 +25,7 @@ def locate(recording):
     # Initialize an empty list to hold the rows of the new matrix
     matrix = []
     for i in range(10):
-        row = [2*(pair[i][2]), 2*(pair[i][3]),2*pair[i][4]] + [0] * 4
+        row = [2*(pair[i][2]), 2*(pair[i][3]), 2*pair[i][4]] + [0] * 4
         row[r_ij[i][1]] = -2 * r_ij[i][2]
         matrix.append(row)
 

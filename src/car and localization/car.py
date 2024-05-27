@@ -4,6 +4,8 @@ import time
 import pyaudio
 import numpy as np
 import matplotlib.pyplot as plt
+from localization import localization
+import scipy
 
 class KITT:
     def __init__(self, port, baudrate=115200):
@@ -11,8 +13,8 @@ class KITT:
         self.speed = 150
         self.angle = 150
         self.carrier_frequency = (10000).to_bytes(2, byteorder='big')
-        self.bit_frequency = (3500).to_bytes(2, byteorder='big')
-        self.repetition_count = (1250).to_bytes(2, byteorder='big')
+        self.bit_frequency = (5000).to_bytes(2, byteorder='big')
+        self.repetition_count = (2500).to_bytes(2, byteorder='big')
         self.code = 0xDEADBEEF.to_bytes(4, byteorder='big')
         # state variables such as speed, angle are defined here
     
@@ -54,11 +56,7 @@ class KITT:
             self.set_speed(150) 
         else: 
             self.set_speed(150) 
-            
-    def left_forward(self):
-        kitt.set_angle(200)
-        kitt.set_speed(160)
-        
+    
     def record(self):
         # Constants
         FORMAT = pyaudio.paInt16
@@ -93,7 +91,10 @@ class KITT:
         pyaudio_handle.terminate()
         print("Recording stopped.")
         self.set_audio_beacon_off()
-        
+        print(data)
+        file1 = open('myfile.txt', 'w')
+        file1.write(str(data))
+        file1.close()
         # Assuming interlaced audio data for 5 channels
         # Reshape the data into 5 separate streams
         if data.shape[0] % CHANNELS == 0:
@@ -106,16 +107,17 @@ class KITT:
         for idx, channel_samples in enumerate(channel_data):
             print(f"Data from microphone {idx + 1}: {channel_samples[:10]}...")  # Print first 10 samples
 
-        # Plotting the data for each channel
-        plt.figure(figsize=(15, 10))  # Set the figure size
-        for i in range(CHANNELS):
-            plt.subplot(CHANNELS, 1, i + 1)  # Create a subplot for each channel
-            plt.plot(channel_data[i])
-            plt.title(f'Channel {i + 1}')
-            plt.xlabel('Sample Number')
-            plt.ylabel('Amplitude')
-        plt.tight_layout()  # Adjust subplots to fit into figure areas
-        plt.show()
+        #Plotting the data for each channel
+        #plt.figure(figsize=(15, 10))  # Set the figure size
+        #for i in range(CHANNELS):
+         #   plt.subplot(CHANNELS, 1, i + 1)  # Create a subplot for each channel
+          #  plt.plot(channel_data[i])
+           # plt.title(f'Channel {i + 1}')
+            #plt.xlabel('Sample Number')
+            #plt.ylabel('Amplitude')
+        #plt.tight_layout()  # Adjust subplots to fit into figure areas
+        #plt.show()
+        return channel_data
 
     def __del__(self):
         self.serial.close()
@@ -157,25 +159,27 @@ def execute_commands(kitt, commands):
             key, duration = command
         else:
             key, duration = command, None
-            
-        if  key == 'a':  # Left forward
+
+        if  key == 'q':  # Stop
+            kitt.stop()
+        elif key == 'a':  # Left forward
             kitt.set_angle(200)
-            kitt.set_speed(163)     
+            kitt.set_speed(160)
         elif key == 's':  # Straight
             kitt.set_angle(150)
             kitt.set_speed(160)
         elif key == 'd':  # Right forward
-            kitt.set_speed(163)
             kitt.set_angle(100)
+            kitt.set_speed(160)
         elif key == 'z':  # Left Backwards 
             kitt.set_angle(200)
-            kitt.set_speed(135)
+            kitt.set_speed(138)
         elif key == 'x':  # straight Backwards 
             kitt.set_angle(150)
             kitt.set_speed(138)
         elif key == 'c':  # right Backwards 
             kitt.set_angle(100)
-            kitt.set_speed(135)    
+            kitt.set_speed(138)    
         elif key == 'e':  # Brakes and goes opposite direction for a while
             kitt.emergency_brake()
         elif key == 'p':  # Play audio beacon
@@ -184,20 +188,25 @@ def execute_commands(kitt, commands):
             kitt.set_audio_beacon_off()
         elif key == 'l':
             kitt.record()
-        elif key == 'q':  # Stop
-            kitt.stop()
-            break
+        elif key == 'q':
+            break  # Exit loop
 
         if duration:
             time.sleep(duration)
 
+    kitt.stop()
+
 if __name__ == "__main__":
     kitt = KITT('COM3')
     #use code below to execute commands
-    commands = [('s', 0.01), ('a', 4),  ('e', 1)]
-    execute_commands(kitt, commands)
-    #wasd(kitt)
-    #recording = kitt.record()
+    #commands = [('a',0.1), ('w', 1), ('q',0.01), ('w',0.01), ('d', 1), ('q',0.01),('x',0.01)]
+    #execute_commands(kitt, commands)
+    recording = kitt.record()
+    #scipy.io.wavfile.write("ref.wav", rate= 48000, data=np.array(recording[0]))
+    print(recording)
+    localize = localization(recording)
+    location = localize.locate()
+    print(location)
     kitt.serial.close()
     # use kitt.record for audio
     # use wasd to steer kitt
