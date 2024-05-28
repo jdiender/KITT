@@ -19,13 +19,19 @@ class KITTmodel:
        #c = 
         Fd = b * abs(self.v0) #+ c*self.v*self.v # determine drag
         if mode == 'deceleration':
-            F_net = -14 + Fd  # deceleration has an opposite net force
+            if self.v<0:
+                F_net = -14 + Fd  # net force equal to max Fb + Fd
+            else:
+                F_net = -14 - Fd  # net force equal to max Fb - Fd
             a = F_net / m  # determine acceleration
             self.v = self.v0 + a * self.dt  # determine new velocity
             if self.v < -0.70:
                 self.v = -0.70  # maximum speed is set at 0.67m/s which is equal to a speed setting of 160 forward or 163 while turning
         else:
-            F_net = 10 - Fd
+            if self.v<0:
+                F_net = 10 + Fd # net force equal to max Fa + Fd
+            else:
+                F_net = 10 - Fd # net force equal to max Fa - Fd
             a = F_net / m  # determine acceleration
             self.v = self.v0 + a * self.dt  # determine new velocity
             if self.v > 0.70:
@@ -96,6 +102,6 @@ def plot(x, y):
     plt.show()
            
 if __name__ == "__main__":
-    commands = [('s', 0.01), ('a', 4), ('e', 1)]
+    commands = [('s', 0.01), ('a', 7.2), ('e', 1)]
     x_data, y_data = execute_commands(commands)
     plot(x_data, y_data)
