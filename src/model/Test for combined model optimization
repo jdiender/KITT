@@ -153,14 +153,14 @@ def execute_commands(kitt, commands):
             key, duration = command, None
             
         if  key == 'a':  # Left forward
-            kitt.set_angle(200)
-            kitt.set_speed(163)     
+            kitt.set_angle(100)
+            kitt.set_speed(160)     
         elif key == 's':  # Straight
             kitt.set_angle(150)
             kitt.set_speed(160)
         elif key == 'd':  # Right forward
-            kitt.set_speed(163)
-            kitt.set_angle(100)
+            kitt.set_speed(160)
+            kitt.set_angle(200)
         elif key == 'z':  # Left Backwards 
             kitt.set_angle(200)
             kitt.set_speed(135)
@@ -187,18 +187,22 @@ def execute_commands(kitt, commands):
 
 if __name__ == "__main__":
     kitt = KITT('COM3')
-    #use code below to execute commands
-    commands = [('s', 3), ('e', 1)] # test straight
+    #use code below to execute comma
+    commands = [('s', 1),  ('d', 3.3), ('s', 1), ('a', 7.7), ('s', 1), ('d', 6.6), ('e', 1)]
+     
     execute_commands(kitt, commands)
-
+    commands = [('x', 3), ('e', 1)] # test reverse   
+    commands = [('s', 3), ('e', 1)] # test straight
     commands = [('a', 7.5), ('e', 1)] # test left turn, full circle    
     commands = [('d', 7.5), ('e', 1)] # test right turn, full circle  
-    commands = [('x', 3), ('e', 1)] # test reverse 
+    commands = [('s', 0.5), ('a', 4.7), ('e', 1)] # test forward then left turn, half circle 
     commands = [('z', 7.5), ('e', 1)] # test reverse left turn, full circle  
     commands = [('c', 7.5), ('e', 1)] # test reverse right turn, full circle  
     commands = [('s', 0.5), ('a', 3), ('e', 1)] # test forward then left turn, half circle     
     commands = [('s', 0.5), ('d', 3), ('e', 1)] # test forward then right turn, half circle  
     commands = [('x', 0.5), ('z', 3), ('e', 1)] # test reverse then reverse left turn, half circle  
-    commands = [('x', 0.5), ('c', 3), ('e', 1)] # test reverse then reverse right turn, half circle  
+    
+    commands = [('x', 1), ('c', 6.4), ('e', 1)] # test reverse then reverse right turn, full circle  
+    commands = [('s', 1), ('d', 8.1), ('e', 1)] # test forward then right turn, full circle  
     kitt.serial.close()
 

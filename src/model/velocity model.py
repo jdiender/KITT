@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 
 # Constants
 m = 5.6          # mass of the car in kg
-b = 5            # drag coefficient 
-Fa_max = 5      # maximum force from the engine in N
+b = 10            # drag coefficient 
+Fa_max = 6      # maximum force from the engine in N
 Fb_max = 7      # maximum braking force in N
 dt = 0.01        # time step in seconds
 T = 8            # total simulation time in seconds

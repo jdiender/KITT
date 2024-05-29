@@ -15,27 +15,22 @@ class KITTmodel:
     def velocity(self, mode):
         self.v0 = self.v  # initial velocity
         m = 5.6  # mass of the car
-        b = 5  # viscous drag coefficient
-       #c = 
+        b = 10  # viscous drag coefficient
         Fd = b * abs(self.v0) #+ c*self.v*self.v # determine drag
         if mode == 'deceleration':
             if self.v<0:
-                F_net = -14 + Fd  # net force equal to max Fb + Fd
+                F_net = -7.4 + Fd  # net force equal to max Fb + Fd
             else:
-                F_net = -14 - Fd  # net force equal to max Fb - Fd
+                F_net = -7.4 - Fd  # net force equal to max Fb - Fd
             a = F_net / m  # determine acceleration
             self.v = self.v0 + a * self.dt  # determine new velocity
-            if self.v < -0.70:
-                self.v = -0.70  # maximum speed is set at 0.67m/s which is equal to a speed setting of 160 forward or 163 while turning
         else:
             if self.v<0:
-                F_net = 10 + Fd # net force equal to max Fa + Fd
+                F_net = 6 + Fd # net force equal to max Fa + Fd
             else:
-                F_net = 10 - Fd # net force equal to max Fa - Fd
+                F_net = 6- Fd # net force equal to max Fa - Fd
             a = F_net / m  # determine acceleration
             self.v = self.v0 + a * self.dt  # determine new velocity
-            if self.v > 0.70:
-                self.v = 0.70  # maximum speed is set at 0.67m/s which is equal to a speed setting of 160 forward or 163 while turning
         return self.v
     
     def direction(self, alpha):
@@ -96,12 +91,12 @@ def plot(x, y):
     plt.plot(x, y)
     plt.xlabel('X Position')
     plt.ylabel('Y Position')
-    plt.xlim(-2.5,2.5)
-    plt.ylim(-2.5,2.5)
+    plt.xlim(-4,1)
+    plt.ylim(0,5)
     plt.title('KITT Model Position')
     plt.show()
            
 if __name__ == "__main__":
-    commands = [('s', 0.01), ('a', 7.2), ('e', 1)]
+    commands = [('s', 1),  ('d', 3), ('a', 7), ('d', 6), ('e', 1)]   
     x_data, y_data = execute_commands(commands)
     plot(x_data, y_data)
