@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+from localization import localization
 
 class KITTmodel:
     def __init__(self):
@@ -95,7 +96,25 @@ def plot(x, y):
     plt.ylim(0, 5)
     plt.title('KITT Model Position')
     plt.show()
-           
+
+def state_tracking(kitt, d0y, d0x, b0x, b0y):
+    localize = localization(recording)
+    location = localize.locate()
+    car_x = location[0]
+    car_y = location[1]
+    theta_direction =  math.atan2((b0y-d0y)/(b0x-d0x)) 
+    theta_expected =  math.atan2((b0y-car_y)/(b0x-car_x))
+    diff_theta = theta_direction - theta_expected
+    if diff_theta < 0:
+        # go left
+        pos= wasd(kitt, 'a')
+    if diff_theta > 0:
+        pos= wasd(kitt, 'd')
+        # go right
+    else:
+        pos= wasd(kitt, 's')
+        # go straight
+        
 if __name__ == "__main__":
     commands = [('s', 1),  ('d', 2.4), ('a', 7), ('d', 6), ('e', 1)]  
     #commands = [('s', 0.5), ('d', 2.5), ('a', 2.5), ('e', 0.5), ('z', 2 ), ('e', 1)]  

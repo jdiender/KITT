@@ -10,10 +10,11 @@ class KITT:
         self.serial = serial.Serial(port, baudrate, rtscts=True)
         self.speed = 150
         self.angle = 150
-        self.carrier_frequency = (10000).to_bytes(2, byteorder='big')
-        self.bit_frequency = (3500).to_bytes(2, byteorder='big')
-        self.repetition_count = (1250).to_bytes(2, byteorder='big')
-        self.code = 0xDEADBEEF.to_bytes(4, byteorder='big')
+        self.carrier_frequency = (15000).to_bytes(2, byteorder='big')
+        self.bit_frequency = (4000).to_bytes(2, byteorder='big')
+        self.repetition_count = (2).to_bytes(2, byteorder='big')
+        self.code = 0xA55AA55A.to_bytes(4, byteorder='big')
+        self.measurements = []
         # state variables such as speed, angle are defined here
     
     def send_command(self, command):
