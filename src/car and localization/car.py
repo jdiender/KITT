@@ -12,10 +12,11 @@ class KITT:
         self.serial = serial.Serial(port, baudrate, rtscts=True)
         self.speed = 150
         self.angle = 150
-        self.carrier_frequency = (10000).to_bytes(2, byteorder='big')
-        self.bit_frequency = (5000).to_bytes(2, byteorder='big')
-        self.repetition_count = (2500).to_bytes(2, byteorder='big')
-        self.code = 0xDEADBEEF.to_bytes(4, byteorder='big')
+        self.carrier_frequency = (15000).to_bytes(2, byteorder='big')
+        self.bit_frequency = (4000).to_bytes(2, byteorder='big')
+        self.repetition_count = (2).to_bytes(2, byteorder='big')
+        self.code = 0xA55AA55A.to_bytes(4, byteorder='big')
+        self.measurements = []
         # state variables such as speed, angle are defined here
     
     def send_command(self, command):
@@ -108,15 +109,15 @@ class KITT:
             print(f"Data from microphone {idx + 1}: {channel_samples[:10]}...")  # Print first 10 samples
 
         #Plotting the data for each channel
-        #plt.figure(figsize=(15, 10))  # Set the figure size
-        #for i in range(CHANNELS):
-         #   plt.subplot(CHANNELS, 1, i + 1)  # Create a subplot for each channel
-          #  plt.plot(channel_data[i])
-           # plt.title(f'Channel {i + 1}')
-            #plt.xlabel('Sample Number')
-            #plt.ylabel('Amplitude')
-        #plt.tight_layout()  # Adjust subplots to fit into figure areas
-        #plt.show()
+        plt.figure(figsize=(15, 10))  # Set the figure size
+        for i in range(CHANNELS):
+            plt.subplot(CHANNELS, 1, i + 1)  # Create a subplot for each channel
+            plt.plot(channel_data[i])
+            plt.title(f'Channel {i + 1}')
+            plt.xlabel('Sample Number')
+            plt.ylabel('Amplitude')
+        plt.tight_layout()  # Adjust subplots to fit into figure areas
+        plt.show()
         return channel_data
 
     def __del__(self):
@@ -202,7 +203,7 @@ if __name__ == "__main__":
     #commands = [('a',0.1), ('w', 1), ('q',0.01), ('w',0.01), ('d', 1), ('q',0.01),('x',0.01)]
     #execute_commands(kitt, commands)
     recording = kitt.record()
-    #scipy.io.wavfile.write("ref.wav", rate= 48000, data=np.array(recording[0]))
+    scipy.io.wavfile.write("ref.wav", rate= 48000, data=np.array(recording[0]))
     print(recording)
     localize = localization(recording)
     location = localize.locate()

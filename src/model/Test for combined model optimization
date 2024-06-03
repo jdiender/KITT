@@ -42,6 +42,29 @@ class KITT:
         self.set_speed(150)
         self.set_angle(150)
         self.send_command('R')
+    
+    def sensor_data(self):
+        self.serial.write(b'Sv\n')
+        vdata = self.serial.read_until(b'\x04').decode()
+        voltage =  vdata.split('VBATT')[1][:4]
+        return voltage
+    
+    def plot_distance_vs_time(measurements):
+        times = [m[0] for m in measurements]
+        voltage = [float(m[3]) for m in measurements]
+        
+        start_time = times[0]
+        times = [t - start_time for t in times]
+        
+        plt.figure(figsize=(10, 10))
+        plt.plot(times, voltage, marker='o', linestyle='-', color='green', label='Voltage')
+        plt.title('Voltage vs. Time Measurement of KITT')
+        plt.xlabel('Time (s)')
+        plt.ylabel('Voltage (V)')
+        plt.ylim(0, 20)  # Set y-axis to range from 0 to 20 volts
+        plt.legend()
+        plt.grid(True)
+        plt.show()
         
     def emergency_brake(self):
         current_speed = self.speed
@@ -121,36 +144,6 @@ class KITT:
     def __del__(self):
         self.serial.close()
         
-def wasd(kitt):
-    try:
-        while True:
-            key = keyboard.read_key()
-            if key == 'w':  # Forward
-                kitt.set_speed(160)
-            elif key == 'q':  # Stop
-                kitt.stop()
-            elif key == 'a':  # Left
-                kitt.set_angle(200)
-            elif key == 's':  # Straight
-                kitt.set_angle(150)
-            elif key == 'd':  # Right
-                kitt.set_angle(100)
-            elif key == 'z':  # Backwards 
-                kitt.set_speed(138)
-            elif key == 'e':  # Brakes and goes opposite direction for a while
-                kitt.emergency_brake()
-            elif key == 'p':  # Play audio beacon
-                kitt.set_audio_beacon_on()
-            elif key == 'o':  # Turn audio beacon off
-                kitt.set_audio_beacon_off()
-            elif key == 'l':
-                kitt.record()
-            elif key == 'x':
-                break  # Exit loop
-    finally:
-        kitt.stop()
-        if kitt.serial:
-            kitt.serial.close()
 
 def execute_commands(kitt, commands):
     for command in commands:
@@ -160,22 +153,22 @@ def execute_commands(kitt, commands):
             key, duration = command, None
             
         if  key == 'a':  # Left forward
-            kitt.set_angle(200)
-            kitt.set_speed(163)     
+            kitt.set_angle(100)
+            kitt.set_speed(160)     
         elif key == 's':  # Straight
             kitt.set_angle(150)
             kitt.set_speed(160)
         elif key == 'd':  # Right forward
-            kitt.set_speed(163)
-            kitt.set_angle(100)
-        elif key == 'z':  # Left Backwards 
+            kitt.set_speed(160)
             kitt.set_angle(200)
+        elif key == 'z':  # Left Backwards 
+            kitt.set_angle(115)
             kitt.set_speed(135)
         elif key == 'x':  # straight Backwards 
             kitt.set_angle(150)
             kitt.set_speed(138)
         elif key == 'c':  # right Backwards 
-            kitt.set_angle(100)
+            kitt.set_angle(200)
             kitt.set_speed(135)    
         elif key == 'e':  # Brakes and goes opposite direction for a while
             kitt.emergency_brake()
@@ -194,11 +187,41 @@ def execute_commands(kitt, commands):
 
 if __name__ == "__main__":
     kitt = KITT('COM3')
-    #use code below to execute commands
-    commands = [('s', 0.01), ('a', 4),  ('e', 1)]
+    #use code below to execute comma
+    
+    commands = [('p', 2), ('o', 1)]
     execute_commands(kitt, commands)
-    #wasd(kitt)
-    #recording = kitt.record()
+    
+#tests for multiple turns
+    commands = [('s', 1.1),  ('d', 2.64), ('a', 7.7), ('d', 6.6), ('e', 1)] #10%
+
+    commands = [('s', 1.1),  ('d', 2.64), ('s', 1), ('a', 7.7), ('s', 1), ('d', 6.6), ('e', 1)] #10% and straights 1s
+    commands = [('s', 1.15),  ('d', 2.76), ('a', 8.05),('d', 6.9), ('e', 1)] #15%
+    commands = [('s', 1.15),  ('d', 2.76), ('s', 1), ('a', 8.05), ('s', 1), ('d', 6.9), ('e', 1)] #15% and straights 1s
+    commands = [('s', 1.15),  ('d', 2.76), ('s', 0.5), ('a', 8.05), ('s', 0.5), ('d', 6.9), ('e', 1)] #15% and straights 0.5s
+    commands = [('s', 1.2),  ('d', 2.88), ('a', 8.4), ('d', 7.2), ('e', 1)] #20% 
+    commands = [('s', 1.2),  ('d', 2.88), ('s', 1), ('a', 8.4), ('s', 1), ('d', 7.2), ('e', 1)] #20% and straights 1s
+    commands = [('s', 1.2),  ('d', 2.88), ('s', 0.5), ('a', 8.4), ('s', 0.5), ('d', 7.2), ('e', 1)] #20% and straights 0.5s
+
+#test quart turns
+    commands = [('s', 0.5), ('d', 2.5),  ('s', 0.5), ('a', 2.5), ('e', 0.5),('x', 0.5), ('z', 2 ), ('e', 1)] # test forward then right turn, then left turn, brake, reverse and turn left
+    commands = [('s', 0.5), ('d', 2.75),  ('s', 0.5), ('a', 2.75), ('e', 0.5),('x', 0.5), ('z', 2.2 ), ('e', 1)] # 10% test forward then right turn, then left turn, brake, reverse and turn left
+    commands = [('s', 0.5), ('d', 3),  ('s', 0.5), ('a', 3), ('e', 0.5),('x', 0.5), ('z', 2.4 ), ('e', 1)] #20% test forward then right turn, then left turn, brake, reverse and turn left
+    commands = [('s', 0.52), ('d', 2.5), ('e', 0.5), ('s', 0.2),  ('a', 2.5), ('e', 0.5), ('z', 2.2 ), ('x', 0.4), ('e', 1)] # test forward then right turn, then left turn, brake, revers +%10 and turn left
+   
+#simple tests
+    commands = [('x', 3), ('e', 1)] # test reverse   
+    commands = [('s', 3), ('e', 1)] # test straight
+    commands = [('a', 7.5), ('e', 1)] # test left turn, full circle    
+    commands = [('d', 7.5), ('e', 1)] # test right turn, full circle  
+    commands = [('s', 0.5), ('a', 4.7), ('e', 1)] # test forward then left turn, half circle 
+    commands = [('z', 7.5), ('e', 1)] # test reverse left turn, full circle  
+    commands = [('c', 7.5), ('e', 1)] # test reverse right turn, full circle  
+    commands = [('s', 0.5), ('a', 3), ('e', 1)] # test forward then left turn, half circle     
+    commands = [('s', 0.5), ('d', 3), ('e', 1)] # test forward then right turn, half circle  
+    commands = [('x', 0.5), ('z', 3), ('e', 1)] # test reverse then reverse left turn, half circle  
+    
+    commands = [('x', 1), ('c', 6.4), ('e', 1)] # test reverse then reverse right turn, full circle  
+    commands = [('s', 1), ('d', 8.1), ('e', 1)] # test forward then right turn, full circle  
     kitt.serial.close()
-    # use kitt.record for audio
-    # use wasd to steer kitt
+

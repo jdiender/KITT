@@ -131,6 +131,6 @@ if __name__ == "__main__":
     #plot_distance_vs_time(kitt.measurements)
     #kitt = KITT('COM3')
     #kitt.serial.write(b'Sv\n')
-    data = kitt.sensor_data()
+    #data = kitt.sensor_data()
     kitt.serial.close()
-    print(data) 
+    #print(data) 
