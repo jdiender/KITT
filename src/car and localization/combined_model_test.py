@@ -8,8 +8,8 @@ class KITTmodel:
         self.v = 0
         self.dt = 0.1
         self.L = 0.335
-        self.z = np.array([4.5, 4.5])  # position
-        self.d = np.array([-1, 0])  # direction
+        self.z = np.array([4.5, 1.5])  # position
+        self.d = np.array([1, 0])  # direction
         self.angle = 0
 
     def velocity(self, mode):
@@ -41,30 +41,8 @@ class KITTmodel:
     def position(self, mode, alpha):
         self.velocity(mode)  # calculate the velocity
         self.direction(alpha)  # determine the direction
-        print(self.z)
         self.z = self.z + self.v * self.dt * self.d  # determine the new position of the car
         return self.z
-#check of target in cirle--> door 4 if statement van enes met min(xy) max(xy)
-#if in circle --> determine x_delta
-    def equation_circle(x, y, radius, center_x, center_y):
-        return (x-center_x)**2 + (y-center_y)**2 <= radius**2
-        
-    def check_range(current_x, current_y, target_x, target_y, theta_direction):
-        offset_x = np.cos(90-theta_direction) 
-        offset_y = np.sin(90-theta_direction)
-        center1_x = current_x - offset_x
-        center2_x = current_x + offset_x
-        center1_y = current_y + offset_y
-        center2_y = current_y - offset_y
-        
-        # (x-center1_x)**2 + (y-center1_y) = 0.85**2
-        # (x-center2_x)**2 + (y-center2_y) = 0.85**2
-
-        radius = 0.85
-        y = "some y"
-        x_left_bound = - np.sqrt(radius**2 - ())
-
-        return 
     
     def state_tracking(self, b0x, b0y):
         current_position = self.z  # position of the car
@@ -77,9 +55,9 @@ class KITTmodel:
             theta_direction = math.degrees(math.atan2(d0y, d0x))  # Angle of the direction vector in degrees
             theta_expected = math.degrees(math.atan2(b0y - current_position[1], b0x - current_position[0]))  # Expected angle
             
-            angle_diff = (theta_expected - theta_direction + 360) % 360 #+360 ensures a positive outcome, %360 ensures a range between 0 and 360 degrees
+            angle_diff = (theta_expected - theta_direction + 360) % 360
             if angle_diff > 180:
-                angle_diff -= 360 #make the range go from -180 to 180
+                angle_diff -= 360
             
             if np.linalg.norm(current_position - target_position) >= 1.70:
                 direction = "forward" if abs(angle_diff) < 90 else "reverse"
@@ -171,7 +149,7 @@ def plot(x, y):
 
 if __name__ == "__main__":
     kitt = KITTmodel()
-    x_data, y_data, commands = kitt.state_tracking(4.5, 4.5)
+    x_data, y_data, commands = kitt.state_tracking(1.5, 1.5)
                                         
     plot(x_data, y_data)
     x_data, y_data = execute_commands(commands)
