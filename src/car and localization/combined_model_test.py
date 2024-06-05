@@ -6,10 +6,10 @@ class KITTmodel:
     def __init__(self):
         self.v0 = 0
         self.v = 0
-        self.dt = 0.1
+        self.dt = 0.2
         self.L = 0.335
-        self.z = np.array([4.5, 4.5])  # position
-        self.d = np.array([-1, 0])  # direction
+        self.z = np.array([3.5, 0.5])  # position
+        self.d = np.array([0, 1])  # direction
         self.angle = 0
 
     def velocity(self, mode):
@@ -26,9 +26,9 @@ class KITTmodel:
             self.v = self.v0 + a * self.dt  # determine new velocity
         else:
             if self.v < 0:
-                F_net = 6 + Fd  # net force equal to max Fa + Fd
+                F_net = 6.3 + Fd  # net force equal to max Fa + Fd
             else:
-                F_net = 6 - Fd  # net force equal to max Fa - Fd
+                F_net = 6.3 - Fd  # net force equal to max Fa - Fd
             a = F_net / m  # determine acceleration
             self.v = self.v0 + a * self.dt  # determine new velocity
         return self.v
@@ -41,85 +41,13 @@ class KITTmodel:
     def position(self, mode, alpha):
         self.velocity(mode)  # calculate the velocity
         self.direction(alpha)  # determine the direction
-        print(self.z)
         self.z = self.z + self.v * self.dt * self.d  # determine the new position of the car
         return self.z
-#check of target in cirle--> door 4 if statement van enes met min(xy) max(xy)
-#if in circle --> determine x_delta
-    def equation_circle( x, y, radius, center_x, center_y):
-        distance = np.sqrt((x-center_x)**2 + (y-center_y)**2)
-        return distance < radius
-        
-    def check_range(self, current_x, current_y, target_x, target_y, theta_direction):
-        radius = 0.85
-        offset_x = radius * np.cos(90-theta_direction) 
-        offset_y = radius * np.sin(90-theta_direction)
-        center1_x = current_x - offset_x
-        center2_x = current_x + offset_x
-        center1_y = current_y + offset_y
-        center2_y = current_y - offset_y
-        
-        check_x1 = self.equation_circle(target_x, target_y, radius, center1_x, center1_y)
-        check_x2 = self.equation_circle(target_x, target_y, radius, center2_x, center2_y)
-
-        intersections = find_circle_line_intersections(center1_x, center1_y, radius, theta_direction, target_x, target_y)
-
-    if intersections is None:
-        print("There are no intersections.")
-    else:
-        for point in intersections:
-            print(f"Intersection point: {point}")
-
-
-    def find_circle_line_intersections(h, k, r, theta, x0, y0):
-        theta = math.radians(theta)
-        m = math.tan(theta)
-        
-        # Line equation: y = mx + c
-        c = y0 - m * x0
-        
-        # Substitute y = mx + c into the circle equation
-        A = 1 + m**2
-        B = 2 * (m * c - m * k - h)
-        C = h**2 + k**2 + c**2 - 2 * k * c - r**2
-        
-        # Quadratic equation: Ax^2 + Bx + C = 0
-        discriminant = B**2 - 4 * A * C
-        
-        if discriminant < 0:
-            # No intersection
-            return None
-        elif discriminant == 0:
-            # One intersection (tangent line)
-            x1 = -B / (2 * A)
-            y1 = m * x1 + c
-            return [(x1, y1)]
-        else:
-            # Two intersections
-            sqrt_discriminant = math.sqrt(discriminant)
-            x1 = (-B + sqrt_discriminant) / (2 * A)
-            y1 = m * x1 + c
-            x2 = (-B - sqrt_discriminant) / (2 * A)
-            y2 = m * x2 + c
-            return [(x1, y1), (x2, y2)]
-
-    # Example usage
-   
-    
-        if check_x1:
-            x_forward = 
-            x_backward = 
-            return True
-        elif check_x2:
-            x_forward = 
-            x_backward = 
-            return True 
-        return False
     
     def state_tracking(self, b0x, b0y):
         current_position = self.z  # position of the car
         x_data, y_data = [], []  # For plotting the path state tracking calculates
-        commands = []  # gather commands for car.py
+        commands = [('s', 0.4)]  # gather commands for car.py
         target_position = np.array([b0x, b0y])
         
         while np.linalg.norm(current_position - target_position) > 0.1:
@@ -127,45 +55,63 @@ class KITTmodel:
             theta_direction = math.degrees(math.atan2(d0y, d0x))  # Angle of the direction vector in degrees
             theta_expected = math.degrees(math.atan2(b0y - current_position[1], b0x - current_position[0]))  # Expected angle
             
-            angle_diff = (theta_expected - theta_direction + 360) % 360 #+360 ensures a positive outcome, %360 ensures a range between 0 and 360 degrees
+            angle_diff = (theta_expected - theta_direction + 360) % 360
             if angle_diff > 180:
-                angle_diff -= 360 #make the range go from -180 to 180
+                angle_diff -= 360
             
             if np.linalg.norm(current_position - target_position) >= 1.70:
                 direction = "forward" if abs(angle_diff) < 90 else "reverse"
-            
             match direction:
                 case "forward":
                     if angle_diff < -5:
-                        # go left
-                        commands.append(('a', 0.1))
-                        self.angle = -24.9
-                    elif angle_diff > 5:
                         # go right
-                        commands.append(('d', 0.1))
-                        self.angle = 24.3
+                        if commands and commands[-1][0] == 'a':
+                            commands[-1] = ('a', commands[-1][1] + 0.2)
+                        else:
+                            commands.append(('a', 0.2))
+                        self.angle = -23.9 #-24.9
+                    elif angle_diff > 5:
+                        # go left
+                        if commands and commands[-1][0] == 'd':
+                            commands[-1] = ('d', commands[-1][1] + 0.2)
+                        else:
+                            commands.append(('d', 0.2))
+                        self.angle = 23.3 #24.3
                     else:
                         # go straight
-                        commands.append(('s', 0.1))
+                        if commands and commands[-1][0] == 's':
+                            commands[-1] = ('s', commands[-1][1] + 0.2)
+                        else:
+                            commands.append(('s', 0.2))
                         self.angle = 0
                 case "reverse":
-                    if angle_diff < -5 :
+                    if angle_diff < -5:
                         # go left
-                        commands.append(('z', 0.1))
+                        if commands and commands[-1][0] == 'z':
+                            commands[-1] = ('z', commands[-1][1] + 0.2)
+                        else:
+                            commands.append(('z', 0.2))
                         self.angle = -24.9
                     elif angle_diff > 5:
                         # go right
-                        commands.append(('c', 0.1))
+                        if commands and commands[-1][0] == 'c':
+                            commands[-1] = ('c', commands[-1][1] + 0.2)
+                        else:
+                            commands.append(('c', 0.2))
                         self.angle = 24.3
                     else:
                         # go straight
-                        commands.append(('x', 0.1))
+                        if commands and commands[-1][0] == 'x':
+                            commands[-1] = ('x', commands[-1][1] + 0.2)
+                        else:
+                            commands.append(('x', 0.2))
                         self.angle = 0
             
             current_position = self.position("acceleration" if direction == "forward" else "deceleration", self.angle)
             x_data.append(current_position[0])  # Save x coordinate of the car
             y_data.append(current_position[1])  # Save y coordinate of the car
-        
+        commands.append(('e', 1))
+        print(commands)
         return x_data, y_data, commands
 
 def wasd(kitt, command=None):
@@ -221,8 +167,8 @@ def plot(x, y):
 
 if __name__ == "__main__":
     kitt = KITTmodel()
-    x_data, y_data, commands = kitt.state_tracking(4.5, 4.5)
-                                        
+    x_data, y_data, commands = kitt.state_tracking(2.5, 3.5)
+                                       
     plot(x_data, y_data)
     x_data, y_data = execute_commands(commands)
     plot(x_data, y_data)

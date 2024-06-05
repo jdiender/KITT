@@ -5,6 +5,7 @@ import pyaudio
 import numpy as np
 import matplotlib.pyplot as plt
 from localization import localization
+from combined_model_test import KITTmodel
 import scipy
 
 class KITT:
@@ -12,15 +13,34 @@ class KITT:
         self.serial = serial.Serial(port, baudrate, rtscts=True)
         self.speed = 150
         self.angle = 150
-        self.carrier_frequency = (15000).to_bytes(2, byteorder='big')
-        self.bit_frequency = (4000).to_bytes(2, byteorder='big')
-        self.repetition_count = (2).to_bytes(2, byteorder='big')
-        self.code = 0xA55AA55A.to_bytes(4, byteorder='big')
+        self.carrier_frequency = (10000).to_bytes(2, byteorder='big')
+        self.bit_frequency = (5000).to_bytes(2, byteorder='big')
+        self.repetition_count = (2500).to_bytes(2, byteorder='big')
+        self.code = 0xDEADBEEF.to_bytes(4, byteorder='big')
         self.measurements = []
         # state variables such as speed, angle are defined here
     
     def send_command(self, command):
         self.serial.write(command.encode())
+
+    def State_tracking_localization(self, b0x, b0y):
+        self.z = self.localize()
+        commands = self.state_tracking(b0x, b0y)
+        self.z =  self.localize()
+        i = 0
+        while (i <= 3):
+            if (b0x - 0.2) <=self.z <= (b0x + 0.2):
+                if (b0y - 0.2) <= self.z <= (b0y + 0.2):
+                    break
+                else:
+                    self.state_tracking()
+                    return commands
+                    i += 1
+            else:
+                self.state_tracking()
+                i += 1
+        return commands
+
     
     def set_speed(self, speed):
         self.speed = speed #set speed
@@ -164,22 +184,22 @@ def execute_commands(kitt, commands):
         if  key == 'q':  # Stop
             kitt.stop()
         elif key == 'a':  # Left forward
-            kitt.set_angle(200)
-            kitt.set_speed(160)
+            kitt.set_angle(100)
+            kitt.set_speed(159)
         elif key == 's':  # Straight
             kitt.set_angle(150)
-            kitt.set_speed(160)
+            kitt.set_speed(158)
         elif key == 'd':  # Right forward
-            kitt.set_angle(100)
-            kitt.set_speed(160)
-        elif key == 'z':  # Left Backwards 
             kitt.set_angle(200)
+            kitt.set_speed(159)
+        elif key == 'z':  # Left Backwards 
+            kitt.set_angle(100)
             kitt.set_speed(138)
         elif key == 'x':  # straight Backwards 
             kitt.set_angle(150)
             kitt.set_speed(138)
         elif key == 'c':  # right Backwards 
-            kitt.set_angle(100)
+            kitt.set_angle(200)
             kitt.set_speed(138)    
         elif key == 'e':  # Brakes and goes opposite direction for a while
             kitt.emergency_brake()
@@ -200,14 +220,21 @@ def execute_commands(kitt, commands):
 if __name__ == "__main__":
     kitt = KITT('COM3')
     #use code below to execute commands
-    #commands = [('a',0.1), ('w', 1), ('q',0.01), ('w',0.01), ('d', 1), ('q',0.01),('x',0.01)]
-    #execute_commands(kitt, commands)
+    #commands = [('p', 4), ('o', 2)]   
+    #execute_commands(kitt, commands) 
+    #kitt_model = KITTmodel()  
+    #x_data, y_data, commands = kitt_model.state_tracking(2.5, 3.5)
+    #wasd(kitt)
+
+    
     recording = kitt.record()
-    scipy.io.wavfile.write("ref.wav", rate= 48000, data=np.array(recording[0]))
+    #scipy.io.wavfile.write(r"C:\Users\julie\Documents\TU\Y2 23-24\EPO4Git\KITT\reference.wav", rate= 48000, data=np.array(recording[0]))
+    
     print(recording)
     localize = localization(recording)
-    location = localize.locate()
+    location = localize.locate(recording)
     print(location)
+    
     kitt.serial.close()
     # use kitt.record for audio
     # use wasd to steer kitt
