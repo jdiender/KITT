@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+from localization import localization
 
 class KITTmodel:
     def __init__(self):
@@ -8,7 +9,7 @@ class KITTmodel:
         self.v = 0
         self.dt = 0.2
         self.L = 0.335
-        self.z = np.array([3.5, 0.5])  # position
+        self.z = np.array([0.5, 0.5])  # position
         self.d = np.array([0, 1])  # direction
         self.angle = 0
 
@@ -26,9 +27,9 @@ class KITTmodel:
             self.v = self.v0 + a * self.dt  # determine new velocity
         else:
             if self.v < 0:
-                F_net = 6.3 + Fd  # net force equal to max Fa + Fd
+                F_net = 6.5 + Fd  # net force equal to max Fa + Fd
             else:
-                F_net = 6.3 - Fd  # net force equal to max Fa - Fd
+                F_net = 6.5 - Fd  # net force equal to max Fa - Fd
             a = F_net / m  # determine acceleration
             self.v = self.v0 + a * self.dt  # determine new velocity
         return self.v
@@ -47,7 +48,7 @@ class KITTmodel:
     def state_tracking(self, b0x, b0y):
         current_position = self.z  # position of the car
         x_data, y_data = [], []  # For plotting the path state tracking calculates
-        commands = [('s', 0.4)]  # gather commands for car.py
+        commands = []  # gather commands for car.py
         target_position = np.array([b0x, b0y])
         
         while np.linalg.norm(current_position - target_position) > 0.1:
@@ -61,22 +62,23 @@ class KITTmodel:
             
             if np.linalg.norm(current_position - target_position) >= 1.70:
                 direction = "forward" if abs(angle_diff) < 90 else "reverse"
+            
             match direction:
                 case "forward":
                     if angle_diff < -5:
-                        # go right
+                        # go left
                         if commands and commands[-1][0] == 'a':
                             commands[-1] = ('a', commands[-1][1] + 0.2)
                         else:
                             commands.append(('a', 0.2))
-                        self.angle = -23.9 #-24.9
+                        self.angle = -20.6 #-24.9
                     elif angle_diff > 5:
-                        # go left
+                        # go right
                         if commands and commands[-1][0] == 'd':
                             commands[-1] = ('d', commands[-1][1] + 0.2)
                         else:
                             commands.append(('d', 0.2))
-                        self.angle = 23.3 #24.3
+                        self.angle = 20 #24.3
                     else:
                         # go straight
                         if commands and commands[-1][0] == 's':
@@ -112,8 +114,35 @@ class KITTmodel:
             y_data.append(current_position[1])  # Save y coordinate of the car
         commands.append(('e', 1))
         print(commands)
-        return x_data, y_data, commands
+        return commands
+    
+    def localize(self):
+        recording = kitt.record()
+        localize = localization(recording)
+        location = localize.locate()
+        print(location)
+        return localization
+    
+    def State_tracking_localization(self, b0x, b0y):
+        loc = self.localize()
+        self.z = np.array([loc[0], loc[1]])
+        commands = self.state_tracking(b0x, b0y)
+        self.z =  self.localize()
+        i = 0
+        while (i <= 3):
+            if (b0x - 0.2) <=self.z <= (b0x + 0.2):
+                if (b0y - 0.2) <= self.z <= (b0y + 0.2):
+                    break
+                else:
+                    self.state_tracking()
+                    return commands
+                    i += 1
+            else:
+                self.state_tracking()
+                i += 1
+        return commands
 
+        
 def wasd(kitt, command=None):
     pos = np.array([0, 0])
     if command:
@@ -167,7 +196,7 @@ def plot(x, y):
 
 if __name__ == "__main__":
     kitt = KITTmodel()
-    x_data, y_data, commands = kitt.state_tracking(2.5, 3.5)
+    x_data, y_data, commands = kitt.State_tracking_localization(1.5, 3.5)
                                        
     plot(x_data, y_data)
     x_data, y_data = execute_commands(commands)

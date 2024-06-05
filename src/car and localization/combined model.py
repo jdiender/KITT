@@ -46,25 +46,75 @@ class KITTmodel:
         return self.z
 #check of target in cirle--> door 4 if statement van enes met min(xy) max(xy)
 #if in circle --> determine x_delta
-    def equation_circle(x, y, radius, center_x, center_y):
-        return (x-center_x)**2 + (y-center_y)**2 <= radius**2
+    def equation_circle( x, y, radius, center_x, center_y):
+        distance = np.sqrt((x-center_x)**2 + (y-center_y)**2)
+        return distance < radius
         
-    def check_range(current_x, current_y, target_x, target_y, theta_direction):
-        offset_x = np.cos(90-theta_direction) 
-        offset_y = np.sin(90-theta_direction)
+    def check_range(self, current_x, current_y, target_x, target_y, theta_direction):
+        radius = 0.85
+        offset_x = radius * np.cos(90-theta_direction) 
+        offset_y = radius * np.sin(90-theta_direction)
         center1_x = current_x - offset_x
         center2_x = current_x + offset_x
         center1_y = current_y + offset_y
         center2_y = current_y - offset_y
         
-        # (x-center1_x)**2 + (y-center1_y) = 0.85**2
-        # (x-center2_x)**2 + (y-center2_y) = 0.85**2
+        check_x1 = self.equation_circle(target_x, target_y, radius, center1_x, center1_y)
+        check_x2 = self.equation_circle(target_x, target_y, radius, center2_x, center2_y)
 
-        radius = 0.85
-        y = "some y"
-        x_left_bound = - np.sqrt(radius**2 - ())
+        intersections = find_circle_line_intersections(center1_x, center1_y, radius, theta_direction, target_x, target_y)
 
-        return 
+    if intersections is None:
+        print("There are no intersections.")
+    else:
+        for point in intersections:
+            print(f"Intersection point: {point}")
+
+
+    def find_circle_line_intersections(h, k, r, theta, x0, y0):
+        theta = math.radians(theta)
+        m = math.tan(theta)
+        
+        # Line equation: y = mx + c
+        c = y0 - m * x0
+        
+        # Substitute y = mx + c into the circle equation
+        A = 1 + m**2
+        B = 2 * (m * c - m * k - h)
+        C = h**2 + k**2 + c**2 - 2 * k * c - r**2
+        
+        # Quadratic equation: Ax^2 + Bx + C = 0
+        discriminant = B**2 - 4 * A * C
+        
+        if discriminant < 0:
+            # No intersection
+            return None
+        elif discriminant == 0:
+            # One intersection (tangent line)
+            x1 = -B / (2 * A)
+            y1 = m * x1 + c
+            return [(x1, y1)]
+        else:
+            # Two intersections
+            sqrt_discriminant = math.sqrt(discriminant)
+            x1 = (-B + sqrt_discriminant) / (2 * A)
+            y1 = m * x1 + c
+            x2 = (-B - sqrt_discriminant) / (2 * A)
+            y2 = m * x2 + c
+            return [(x1, y1), (x2, y2)]
+
+    # Example usage
+   
+    
+        if check_x1:
+            x_forward = 
+            x_backward = 
+            return True
+        elif check_x2:
+            x_forward = 
+            x_backward = 
+            return True 
+        return False
     
     def state_tracking(self, b0x, b0y):
         current_position = self.z  # position of the car
