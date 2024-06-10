@@ -8,29 +8,39 @@ class KITTmodel:
         self.v = 0
         self.dt = 0.2
         self.L = 0.335
-        self.z = np.array([3.5, 0.5])  # position
+        self.z = np.array([2.0, 0.0])  # position
         self.d = np.array([0, 1])  # direction
         self.angle = 0
 
     def velocity(self, mode):
         self.v0 = self.v  # initial velocity
         m = 5.6  # mass of the car
-        b = 10  # viscous drag coefficient
+        b = 10.2  # viscous drag coefficient
         Fd = b * abs(self.v0)  # determine drag
-        if mode == 'deceleration':
-            if self.v < 0:
-                F_net = -7.4 + Fd  # net force equal to max Fb + Fd
-            else:
-                F_net = -7.4 - Fd  # net force equal to max Fb - Fd
-            a = F_net / m  # determine acceleration
-            self.v = self.v0 + a * self.dt  # determine new velocity
-        else:
-            if self.v < 0:
-                F_net = 6.3 + Fd  # net force equal to max Fa + Fd
-            else:
-                F_net = 6.3 - Fd  # net force equal to max Fa - Fd
-            a = F_net / m  # determine acceleration
-            self.v = self.v0 + a * self.dt  # determine new velocity
+        match mode:
+            case "acceleration":
+                if self.v < 0:
+                    F_net = 7.36 + Fd  # net force equal to max Fa + Fd
+                else:
+                    F_net = 7.36 - Fd  # net force equal to max Fa - Fd
+            case "acceleration right":
+                if self.v < 0:
+                    F_net = 5.9 + Fd  # net force equal to max Fa + Fd
+                else:
+                    F_net = 5.9 - Fd  # net force equal to max Fa - Fd
+            case "acceleration left":
+                if self.v < 0:
+                    F_net = 5.94 + Fd  # net force equal to max Fa + Fd
+                else:
+                    F_net = 5.94 - Fd  # net force equal to max Fa - Fd        
+            case 'deceleration':
+                if self.v < 0:
+                    F_net = -7.4 + Fd  # net force equal to max Fb + Fd
+                else:
+                    F_net = -7.4 - Fd  # net force equal to max Fb - Fd        
+        a = F_net / m  # determine acceleration
+        self.v = self.v0 + a * self.dt  # determine new velocity
+            
         return self.v
 
     def direction(self, alpha):
@@ -47,7 +57,7 @@ class KITTmodel:
     def state_tracking(self, b0x, b0y):
         current_position = self.z  # position of the car
         x_data, y_data = [], []  # For plotting the path state tracking calculates
-        commands = [('s', 0.4)]  # gather commands for car.py
+        commands = [('s', 0.2)]  # gather commands for car.py
         target_position = np.array([b0x, b0y])
         
         while np.linalg.norm(current_position - target_position) > 0.1:
@@ -63,20 +73,23 @@ class KITTmodel:
                 direction = "forward" if abs(angle_diff) < 90 else "reverse"
             match direction:
                 case "forward":
+                    
                     if angle_diff < -5:
                         # go right
                         if commands and commands[-1][0] == 'a':
                             commands[-1] = ('a', commands[-1][1] + 0.2)
                         else:
                             commands.append(('a', 0.2))
-                        self.angle = -23.9 #-24.9
+                        self.angle = -18.5 #-24.9
+                        mode ="acceleration right"
                     elif angle_diff > 5:
                         # go left
                         if commands and commands[-1][0] == 'd':
                             commands[-1] = ('d', commands[-1][1] + 0.2)
                         else:
                             commands.append(('d', 0.2))
-                        self.angle = 23.3 #24.3
+                        self.angle = 19.0 #24.3
+                        mode ="acceleration left"
                     else:
                         # go straight
                         if commands and commands[-1][0] == 's':
@@ -84,6 +97,7 @@ class KITTmodel:
                         else:
                             commands.append(('s', 0.2))
                         self.angle = 0
+                        mode ="acceleration"
                 case "reverse":
                     if angle_diff < -5:
                         # go left
@@ -106,8 +120,9 @@ class KITTmodel:
                         else:
                             commands.append(('x', 0.2))
                         self.angle = 0
+                    mode ="deceleration"
             
-            current_position = self.position("acceleration" if direction == "forward" else "deceleration", self.angle)
+            current_position = self.position(mode, self.angle)
             x_data.append(current_position[0])  # Save x coordinate of the car
             y_data.append(current_position[1])  # Save y coordinate of the car
         commands.append(('e', 1))
@@ -126,13 +141,13 @@ def wasd(kitt, command=None):
     elif key == 'i':  # stop for backwards
         pos = kitt.position("acceleration", kitt.angle)
     elif key == 'a':  # left forward
-        kitt.angle = -24.9
-        pos = kitt.position("acceleration", kitt.angle)
+        kitt.angle = -18.6
+        pos = kitt.position("acceleration left", kitt.angle)
     elif key == 's':  # straight
         kitt.angle = 0
-        pos = kitt.position("acceleration", kitt.angle)
+        pos = kitt.position("acceleration right", kitt.angle)
     elif key == 'd':  # right
-        kitt.angle = 24.3
+        kitt.angle = 19
         pos = kitt.position("acceleration", kitt.angle)
     elif key == 'x':  # straight Backwards
         kitt.angle = 0
@@ -167,7 +182,7 @@ def plot(x, y):
 
 if __name__ == "__main__":
     kitt = KITTmodel()
-    x_data, y_data, commands = kitt.state_tracking(2.5, 3.5)
+    x_data, y_data, commands = kitt.state_tracking(1.0, 2.0)
                                        
     plot(x_data, y_data)
     x_data, y_data = execute_commands(commands)

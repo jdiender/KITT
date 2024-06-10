@@ -5,7 +5,7 @@ import pyaudio
 import numpy as np
 import matplotlib.pyplot as plt
 from localization import localization
-from combined_model_test import KITTmodel
+from state_tracking import KITTmodel
 import scipy
 
 class KITT:
@@ -23,9 +23,9 @@ class KITT:
     def send_command(self, command):
         self.serial.write(command.encode())
 
-    def State_tracking_localization(self, b0x, b0y):
+    def state_tracking_localization(self, b0x, b0y):
         self.z = self.localize()
-        commands = self.state_tracking(b0x, b0y)
+        commands = self.check_coordinates((b0x, b0y))
         self.z =  self.localize()
         i = 0
         while (i <= 3):
@@ -129,15 +129,15 @@ class KITT:
             print(f"Data from microphone {idx + 1}: {channel_samples[:10]}...")  # Print first 10 samples
 
         #Plotting the data for each channel
-        plt.figure(figsize=(15, 10))  # Set the figure size
-        for i in range(CHANNELS):
-            plt.subplot(CHANNELS, 1, i + 1)  # Create a subplot for each channel
-            plt.plot(channel_data[i])
-            plt.title(f'Channel {i + 1}')
-            plt.xlabel('Sample Number')
-            plt.ylabel('Amplitude')
-        plt.tight_layout()  # Adjust subplots to fit into figure areas
-        plt.show()
+        #plt.figure(figsize=(15, 10))  # Set the figure size
+        #for i in range(CHANNELS):
+         #   plt.subplot(CHANNELS, 1, i + 1)  # Create a subplot for each channel
+          #  plt.plot(channel_data[i])
+           # plt.title(f'Channel {i + 1}')
+           # plt.xlabel('Sample Number')
+            #plt.ylabel('Amplitude')
+        #plt.tight_layout()  # Adjust subplots to fit into figure areas
+        #plt.show()
         return channel_data
 
     def __del__(self):
@@ -185,13 +185,13 @@ def execute_commands(kitt, commands):
             kitt.stop()
         elif key == 'a':  # Left forward
             kitt.set_angle(100)
-            kitt.set_speed(159)
+            kitt.set_speed(160)
         elif key == 's':  # Straight
             kitt.set_angle(150)
-            kitt.set_speed(158)
+            kitt.set_speed(160)
         elif key == 'd':  # Right forward
             kitt.set_angle(200)
-            kitt.set_speed(159)
+            kitt.set_speed(160)
         elif key == 'z':  # Left Backwards 
             kitt.set_angle(100)
             kitt.set_speed(138)
@@ -221,20 +221,39 @@ if __name__ == "__main__":
     kitt = KITT('COM3')
     #use code below to execute commands
     #commands = [('p', 4), ('o', 2)]   
-    #execute_commands(kitt, commands) 
-    #kitt_model = KITTmodel()  
-    #x_data, y_data, commands = kitt_model.state_tracking(2.5, 3.5)
+    # 
+    kitt_model = KITTmodel()  
+    b = (2, 3)
+    z = [0.0, 0.0]
+    d = [0, 1]
+    x_data, y_data, commands = kitt_model.check_coordinates(b, z, d)
+    
+    execute_commands(kitt, commands)
+    
+    recording = kitt.record()
+    localize = localization(recording)
+    location = localize.locate()
+    print(location)
+    
+    if np.linalg.norm(localization - b)<0.3 :
+        print("Final destination")
+    else:
+        x_data, y_data, commands = kitt_model.check_coordinates(b)
+        execute_commands(kitt, commands)
+    kitt.serial.close()    
+    
+
     #wasd(kitt)
 
     
-    recording = kitt.record()
+    #recording = kitt.record()
     #scipy.io.wavfile.write(r"C:\Users\julie\Documents\TU\Y2 23-24\EPO4Git\KITT\reference.wav", rate= 48000, data=np.array(recording[0]))
     
-    print(recording)
-    localize = localization(recording)
-    location = localize.locate(recording)
-    print(location)
+    #print(recording)
+    #localize = localization(recording)
+    #location = localize.locate()
+    #print(location)
     
-    kitt.serial.close()
+    
     # use kitt.record for audio
     # use wasd to steer kitt
