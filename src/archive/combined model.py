@@ -62,15 +62,13 @@ class KITTmodel:
         check_x1 = self.equation_circle(target_x, target_y, radius, center1_x, center1_y)
         check_x2 = self.equation_circle(target_x, target_y, radius, center2_x, center2_y)
 
-        intersections = find_circle_line_intersections(center1_x, center1_y, radius, theta_direction, target_x, target_y)
-
-    if intersections is None:
-        print("There are no intersections.")
-    else:
-        for point in intersections:
-            print(f"Intersection point: {point}")
-
-
+        intersections = self.find_circle_line_intersections(center1_x, center1_y, radius, theta_direction, target_x, target_y)
+        if check_x1:
+            return center1_x, center1_y
+        elif check_x2:
+            return center2_x, center2_y
+        else:
+            return False
     def find_circle_line_intersections(h, k, r, theta, x0, y0):
         theta = math.radians(theta)
         m = math.tan(theta)
@@ -103,18 +101,48 @@ class KITTmodel:
             y2 = m * x2 + c
             return [(x1, y1), (x2, y2)]
 
-    # Example usage
-   
-    
-        if check_x1:
-            x_forward = 
-            x_backward = 
-            return True
-        elif check_x2:
-            x_forward = 
-            x_backward = 
-            return True 
-        return False
+    def get_line_eq(car_x, car_y, orientation_angle):
+       
+        slope = math.tan(orientation_angle)
+        intercept = car_y - slope * car_x
+        return slope, intercept
+
+    def get_perpendicular_line_eq(point_x, point_y, slope):
+        
+        perpendicular_slope = -1 / slope
+        intercept = point_y - perpendicular_slope * point_x
+        return perpendicular_slope, intercept
+
+    def get_intersection(slope1, intercept1, slope2, intercept2):
+       
+        x = (intercept2 - intercept1) / (slope1 - slope2)
+        y = slope1 * x + intercept1
+        return x, y
+
+    def calculate_projection_coordinates(self, target_x, target_y):
+        car_x = self.z[0]
+        car_y = self.z[1]
+        
+        d0x, d0y = self.d  # direction vector
+        orientation_angle = math.degrees(math.atan2(d0y, d0x))  # Angle of the direction vector in degrees
+ 
+        if self.check_range() is not False:
+            center_x, center_y = self.check_range(car_x, car_y, target_x, target_y, orientation_angle)
+        else:
+            return False
+        # Get the equation of the line representing the car's orientation
+        car_slope, car_intercept = self.get_line_eq(car_x, car_y, orientation_angle)
+        proj_x1, proj_y1 = self.find_circle_line_intersections(center_x, center_y, orientation_angle,target_x,target_y)[0]
+        proj_x2, proj_y2 = self.find_circle_line_intersections(center_x, center_y, orientation_angle,target_x,target_y)[1]
+
+        # Get the equation of the perpendicular line that goes through the target
+        perp_slope1, perp_intercept1 = self.get_perpendicular_line_eq(proj_x1, proj_y1, car_slope)
+        perp_slope2, perp_intercept2 = self.get_perpendicular_line_eq(proj_x2, proj_y2, car_slope)
+        # Find the intersection point of the car's orientation line and the perpendicular line
+        new_x1, new_y1 = self.get_intersection(car_slope, car_intercept, perp_slope1, perp_intercept1)
+        new_x2, new_y2 = self.get_intersection(car_slope, car_intercept, perp_slope2, perp_intercept2)
+        
+        return [(new_x1,new_y1),(new_x2,new_y2)]
     
     def state_tracking(self, b0x, b0y):
         current_position = self.z  # position of the car
@@ -221,7 +249,7 @@ def plot(x, y):
 
 if __name__ == "__main__":
     kitt = KITTmodel()
-    x_data, y_data, commands = kitt.state_tracking(4.5, 4.5)
+    x_data, y_data, commands = kitt.state_tracking(3.5, 4.5)
                                         
     plot(x_data, y_data)
     x_data, y_data = execute_commands(commands)
