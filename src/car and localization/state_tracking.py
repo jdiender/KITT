@@ -205,7 +205,6 @@ class KITTmodel:
         return x_data, y_data, commands
 
         
-
     def state_tracking(self, b0x, b0y, z):
         self.z = z
         current_position = self.z  # position of the car
@@ -215,15 +214,25 @@ class KITTmodel:
         count = 0
         
         while np.linalg.norm(current_position - target_position) > 0.2:
-            #if count <= 10:
-            d0x, d0y = self.d  # direction vector
-            theta_direction = math.degrees(math.atan2(d0y, d0x))  # Angle of the direction vector in degrees
-            theta_expected = math.degrees(math.atan2(b0y - current_position[1], b0x - current_position[0]))  # Expected angle
+            # Debug print to check loop entry
+            print("Entering while loop")
             
+            d0x, d0y = self.d  # direction vector
+            print("Direction vector:", d0x, d0y)  # Debug print
+
+            theta_direction = math.degrees(math.atan2(d0y, d0x))  # Angle of the direction vector in degrees
+            print("Theta direction:", theta_direction)  # Debug print
+
+            theta_expected = math.degrees(math.atan2(b0y - current_position[1], b0x - current_position[0]))  # Expected angle
+            print("Theta expected:", theta_expected)  # Debug print
+
             angle_diff = (theta_expected - theta_direction + 360) % 360
             if angle_diff > 180:
                 angle_diff -= 360
 
+            # Debug print to check angle difference
+            print("angle:", angle_diff)
+            
             direction = "forward" if abs(angle_diff) < 90 else "reverse"
             match direction:
                 case "forward":
@@ -252,15 +261,15 @@ class KITTmodel:
                         self.angle = 0
                         mode = "acceleration"
                 case "reverse":
-                    if angle_diff < -5:
-                        # go lef
+                    if angle_diff < -175:
+                        # go left
                         if commands and commands[-1][0] == 'z':
                             commands[-1] = ('z', commands[-1][1] + 0.2)
                         else:
                             commands.append(('z', 0.2))
                         self.angle = -18.6
                         mode = "left reverse"
-                    elif angle_diff > 5:
+                    elif angle_diff > 185:
                         # go right
                         if commands and commands[-1][0] == 'c':
                             commands[-1] = ('c', commands[-1][1] + 0.2)
@@ -276,18 +285,12 @@ class KITTmodel:
                             commands.append(('x', 0.2))
                         self.angle = 0
                         mode = "deceleration"
-            #count += 1
-            #else:
             current_position = self.position(mode, self.angle)
             print(current_position)
             x_data.append(current_position[0])  # Save x coordinate of the car
             y_data.append(current_position[1])  # Save y coordinate of the car
         
         commands.append(('e', 0.5))
-        #commands.append(('r', 5))
-        count = 0
-            
-
         commands.append(('e', 0.2))
         return x_data, y_data, commands
 
