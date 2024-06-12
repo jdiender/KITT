@@ -65,20 +65,20 @@ class KITTmodel:
         self.z = self.z + self.v * self.dt * self.d  # determine the new position of the car
         return self.z
 
+    def check_boundary(self, x, y, max_x, max_y, min_x, min_y):
+            if (min_x <= x <= max_x):
+                if (min_y <= y <= max_y):
+                    return True
+                else:
+                    return False
+            else:
+                return False
+            
 #check of target in cirle--> door 4 if statement van enes met min(xy) max(xy)
 #if in circle --> determine x_delta
     def equation_circle(self, x, y, radius, center_x, center_y):
         distance = np.sqrt((x-center_x)**2 + (y-center_y)**2)
         return distance < radius
-    
-    def check_boundary(self, x, y, max_x, max_y, min_x, min_y):
-        if (min_x <= x <= max_x):
-            if (min_y <= y <= max_y):
-                return True
-            else:
-                return False
-        else:
-            return False
 
         
     def check_range(self, current_x, current_y, target_x, target_y, theta_direction):
@@ -182,29 +182,42 @@ class KITTmodel:
         new_x1, new_y1 = self.get_intersection(car_slope, car_intercept, perp_slope1, perp_intercept1)
         new_x2, new_y2 = self.get_intersection(car_slope, car_intercept, perp_slope2, perp_intercept2)
         
-        # Check if new_x1, new_x2, new_y1 and new_y2 are within boundary.
-        # Return the correct x and y that are in boundary.
-        if (0.18 <= new_x1) and (new_x1 <= 4.42) and (0.18 <= new_y1) and (new_y1 <= 4.42):
-            return (new_x1, new_y1)
-        elif (0.18 <= new_x2) and (new_x2 <= 4.42) and (0.18 <= new_y2) and (new_y2 <= 4.42):
-            return (new_x2, new_y2)
+        return [(new_x1,new_y1), (new_x2,new_y2)]
     
-    def check_coordinates(self, target_position):
-        current_position = self.z  # position of the car
+    def check_coordinates(self, target_position, z, d):
+        self.z = z
+        self.d = d
         b0x, b0y = target_position
-
+        max_x = 4.4
+        max_y = 4.4
+        min_x = 0.2
+        min_y = 0.2
+        print("check 1")
         projected_coordinates = self.calculate_projection_coordinates(b0x, b0y)
         if not projected_coordinates:
-            x_data, y_data, commands = self.state_tracking(b0x, b0y)
+            x_data, y_data, commands = self.multiple_coords(target_position)
         else:
-            waypoints = [coord for coord in projected_coordinates if coord != (0, 0)]
-            waypoints.append(target_position)
-            print(waypoints)
-            x_data, y_data, commands = self.multiple_coords(waypoints)
-        return x_data, y_data, commands
-
+            point1, point2 = self.calculate_projection_coordinates(b0x, b0y)
+            x, y = point1
+            boundary = self.check_boundary(x, y, max_x, max_y, min_x, min_y)
+            if boundary == True:
+                
+                #waypoints = point1
+                waypoints= (point1) + (target_position)
+                print(waypoints)
+                x_data, y_data, commands = self.multiple_coords(waypoints)
+            else:
+                x, y = point2
+                boundary = self.check_boundary(x, y, max_x, max_y, min_x, min_y)
+                if boundary == True:
+                    #waypoints = point2
+                    waypoints= (point2, target_position)
+                    print(waypoints)
+                    x_data, y_data, commands = self.multiple_coords(waypoints)
+                else:
+                    print("error")
+            return x_data, y_data, commands
         
-
     def state_tracking(self, b0x, b0y):
         current_position = self.z  # position of the car
         x_data, y_data = [], []  # For plotting the path state tracking calculates
@@ -213,7 +226,7 @@ class KITTmodel:
         count = 0
         
         while np.linalg.norm(current_position - target_position) > 0.1:
-            if count <= 20:
+            if count<=10:
                 d0x, d0y = self.d  # direction vector
                 theta_direction = math.degrees(math.atan2(d0y, d0x))  # Angle of the direction vector in degrees
                 theta_expected = math.degrees(math.atan2(b0y - current_position[1], b0x - current_position[0]))  # Expected angle
@@ -231,16 +244,16 @@ class KITTmodel:
                                 commands[-1] = ('a', commands[-1][1] + 0.2)
                             else:
                                 commands.append(('a', 0.2))
-                            self.angle = -18.5
-                            mode = "acceleration right"
+                            self.angle = -18.5 #-24.9
+                            mode ="acceleration right"
                         elif angle_diff > 5:
                             # go left
                             if commands and commands[-1][0] == 'd':
                                 commands[-1] = ('d', commands[-1][1] + 0.2)
                             else:
                                 commands.append(('d', 0.2))
-                            self.angle = 19.0
-                            mode = "acceleration left"
+                            self.angle = 19.0 #24.3
+                            mode ="acceleration left"
                         else:
                             # go straight
                             if commands and commands[-1][0] == 's':
@@ -248,7 +261,7 @@ class KITTmodel:
                             else:
                                 commands.append(('s', 0.2))
                             self.angle = 0
-                            mode = "acceleration"
+                            mode ="acceleration"
                     case "reverse":
                         if angle_diff < -5:
                             # go left
@@ -273,21 +286,32 @@ class KITTmodel:
                             else:
                                 commands.append(('x', 0.2))
                             self.angle = 0
-                            mode = "deceleration"
-                count += 1
+                            mode ="deceleration"
+                count+=1
+                current_position = self.position(mode, self.angle)
+                x_data.append(current_position[0])  # Save x coordinate of the car
+                y_data.append(current_position[1])  # Save y coordinate of the car
             else:
-                commands.append(('e', 0.5))
-                commands.append(('r', 0.2))
+                commands.append(('e', 1))
+                commands.append(('r', 10))
+                current_position = self.position(mode, self.angle)
+                x_data.append(current_position[0])  # Save x coordinate of the car
+                y_data.append(current_position[1])  # Save y coordinate of the car
                 count = 0
-                
-            current_position = self.position(mode, self.angle)
-            print(current_position)
-            x_data.append(current_position[0])  # Save x coordinate of the car
-            y_data.append(current_position[1])  # Save y coordinate of the car
-        
-        commands.append(('e', 0.2))
-        return x_data, y_data, commands
-
+            
+            return x_data, y_data, commands
+    
+    def compare_position(self, bx, by):
+        x, y = self.z
+        if math.sqrt((x - bx)**2 + (y - by)**2) > 0.3:
+            destination = 'False'
+            x_data, y_data, commands = self.state_tracking(bx, by)
+            return x_data, y_data, commands, destination
+        else:
+            destination = 'True'
+            commands = ('q', 1)
+            print("Destination reached")
+            return x, y, commands, destination
     
     def multiple_coords(self, target_coords):
         x_data, y_data = [], []
@@ -296,16 +320,17 @@ class KITTmodel:
         while (i < len(target_coords)):
             coord_x =  target_coords[i] 
             coord_y = target_coords[i+1]
-            x_vals, y_vals, cmd = self.state_tracking(coord_x, coord_y)
+            x_vals, y_vals, cmd, destination = self.compare_position(coord_x, coord_y)
             x_data += x_vals
             y_data += y_vals
             commands += cmd
-            i= i+2
+            if(destination): i= i+2
+        
         return x_data, y_data, commands
     
     
 def wasd(kitt, command=None):
-    pos = np.array([0,0])
+    pos = np.array([0, 0])
     if command:
         key = command
     else:
@@ -335,8 +360,7 @@ def wasd(kitt, command=None):
         pos = kitt.position("left reverse", kitt.angle)
     elif key == 'r': #start recording
         print("Car should record at this location")
-        pos = kitt.position("deceleration", kitt.angle)
-    print(pos)
+        print(pos)
     return pos
 
 def execute_commands(commands):
@@ -366,10 +390,10 @@ def plot(x, y):
 
 if __name__ == "__main__":
     kitt = KITTmodel()
-    b = (4.2, 2.5)
+    b = (3.2, 2.5)
     z = [1.0, 1.0]
     d = [0, 1]
-    x_data, y_data, commands = kitt.check_coordinates(b)
+    x_data, y_data, commands, destination = kitt.check_coordinates(b, z, d)
                                        
     plot(x_data, y_data)
     x_data, y_data = execute_commands(commands)
