@@ -165,7 +165,7 @@ def wasd(kitt):
                 kitt.set_audio_beacon_on()
             elif key == 'o':  # Turn audio beacon off
                 kitt.set_audio_beacon_off()
-            elif key == 'l':
+            elif key == 'r': #start recording
                 kitt.record()
             elif key == 'x':
                 break  # Exit loop
@@ -215,31 +215,37 @@ def execute_commands(kitt, commands):
         if duration:
             time.sleep(duration)
 
-    kitt.stop()
+    #kitt.stop()
 
 if __name__ == "__main__":
     kitt = KITT('COM3')
     #use code below to execute commands
-    #commands = [('p', 4), ('o', 2)]   
+    commands = [('p', 4), ('o', 2)]   
     # 
-    kitt_model = KITTmodel()  
-    b = (2, 3)
-    z = [0.0, 0.0]
-    d = [0, 1]
-    x_data, y_data, commands = kitt_model.check_coordinates(b, z, d)
+    #kitt = KITTmodel()
+    #b = (0 , 2 )
+    #z = [0.0, 0.0]
     
-    execute_commands(kitt, commands)
-    
-    recording = kitt.record()
-    localize = localization(recording)
-    location = localize.locate()
-    print(location)
-    
-    if np.linalg.norm(localization - b)<0.3 :
-        print("Final destination")
-    else:
-        x_data, y_data, commands = kitt_model.check_coordinates(b)
-        execute_commands(kitt, commands)
+    #d = [0, 1]
+    #x_data, y_data, commands = KITTmodel.check_coordinates( b)
+    #execute_commands(kitt, commands)
+    #kitt.serial.close()
+    #kitt = KITT('COM5')
+    #recording = kitt.record()
+    #localize = localization(recording)
+    #location = localize.locate()
+    #print(location)
+    #localx, localy= localization
+    #bx, by = b
+    #if abs(localx - bx)<0.2 :
+     #       if abs(localy - by)<0.2 :
+      #          print("Final destination")
+       #     else:
+        #        x_data, y_data, commands = kitt_model.check_coordinates(b)
+         #       execute_commands(kitt, commands)
+    #else:
+     #   x_data, y_data, commands = kitt_model.check_coordinates(b)
+      #  execute_commands(kitt, commands)
     kitt.serial.close()    
     
 
