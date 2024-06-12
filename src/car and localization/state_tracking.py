@@ -169,8 +169,13 @@ class KITTmodel:
         # Find the intersection point of the car's orientation line and the perpendicular line
         new_x1, new_y1 = self.get_intersection(car_slope, car_intercept, perp_slope1, perp_intercept1)
         new_x2, new_y2 = self.get_intersection(car_slope, car_intercept, perp_slope2, perp_intercept2)
-        
-        return [(new_x1,new_y1), (new_x2,new_y2)]
+
+        # Check if new_x1, new_x2, new_y1 and new_y2 are within boundary.
+        # Return the correct x and y that are in boundary.
+        if (0 <= new_x1) and (new_x1 <= 4.6) and (0 <= new_y1) and (new_y1 <= 4.6):
+            return (new_x1, new_y1)
+        elif (0 <= new_x2) and (new_x2 <= 4.6) and (0 <= new_y2) and (new_y2 <= 4.6):
+            return (new_x2, new_y2)
     
     def check_coordinates(self, target_position, z, d):
         self.z = z
