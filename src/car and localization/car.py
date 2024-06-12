@@ -207,7 +207,7 @@ def execute_commands(kitt, commands):
             kitt.set_audio_beacon_on()
         elif key == 'o':  # Turn audio beacon off 
             kitt.set_audio_beacon_off()
-        elif key == 'l':
+        elif key == 'r':
             kitt.record()
         elif key == 'q':
             break  # Exit loop
@@ -218,36 +218,12 @@ def execute_commands(kitt, commands):
     #kitt.stop()
 
 if __name__ == "__main__":
-    kitt = KITT('COM3')
+
     #use code below to execute commands
-    commands = [('p', 4), ('o', 2)]   
-    # 
-    #kitt = KITTmodel()
-    #b = (0 , 2 )
-    #z = [0.0, 0.0]
-    
-    #d = [0, 1]
-    #x_data, y_data, commands = KITTmodel.check_coordinates( b)
-    #execute_commands(kitt, commands)
-    #kitt.serial.close()
-    #kitt = KITT('COM5')
-    #recording = kitt.record()
-    #localize = localization(recording)
-    #location = localize.locate()
-    #print(location)
-    #localx, localy= localization
-    #bx, by = b
-    #if abs(localx - bx)<0.2 :
-     #       if abs(localy - by)<0.2 :
-      #          print("Final destination")
-       #     else:
-        #        x_data, y_data, commands = kitt_model.check_coordinates(b)
-         #       execute_commands(kitt, commands)
-    #else:
-     #   x_data, y_data, commands = kitt_model.check_coordinates(b)
-      #  execute_commands(kitt, commands)
+    kitt = KITT('COM4')
+    commands = [('s', 0.2), ('c', 0.2), ('z', 0.2), ('c', 0.2), ('z', 0.2), ('c', 0.2), ('z', 0.2), ('c', 0.2), ('z', 0.2), ('c', 0.2), ('z', 0.2), ('c', 0.2), ('z', 0.2), ('c', 0.2), ('z', 0.4), ('c', 0.4), ('z', 0.2), ('e', 0.5), ('e', 0.2)]
+    execute_commands(kitt, commands)
     kitt.serial.close()    
-    
 
     #wasd(kitt)
 

@@ -189,107 +189,111 @@ class KITTmodel:
         elif (0.18 <= new_x2) and (new_x2 <= 4.42) and (0.18 <= new_y2) and (new_y2 <= 4.42):
             return (new_x2, new_y2)
     
-    def check_coordinates(self, target_position):
+    def check_coordinates(self, target_position, z):
+        self.z = z
         current_position = self.z  # position of the car
         b0x, b0y = target_position
 
         projected_coordinates = self.calculate_projection_coordinates(b0x, b0y)
         if not projected_coordinates:
-            x_data, y_data, commands = self.state_tracking(b0x, b0y)
+            x_data, y_data, commands = self.state_tracking(b0x, b0y, z)
         else:
             waypoints = [coord for coord in projected_coordinates if coord != (0, 0)]
-            waypoints.append(target_position)
+            waypoints.append(target_position, z)
             print(waypoints)
-            x_data, y_data, commands = self.multiple_coords(waypoints)
+            x_data, y_data, commands = self.multiple_coords(waypoints, z)
         return x_data, y_data, commands
 
         
 
-    def state_tracking(self, b0x, b0y):
+    def state_tracking(self, b0x, b0y, z):
+        self.z = z
         current_position = self.z  # position of the car
         x_data, y_data = [], []  # For plotting the path state tracking calculates
         commands = [('s', 0.2)]  # gather commands for car.py
         target_position = np.array([b0x, b0y])
         count = 0
         
-        while np.linalg.norm(current_position - target_position) > 0.1:
-            if count <= 20:
-                d0x, d0y = self.d  # direction vector
-                theta_direction = math.degrees(math.atan2(d0y, d0x))  # Angle of the direction vector in degrees
-                theta_expected = math.degrees(math.atan2(b0y - current_position[1], b0x - current_position[0]))  # Expected angle
-                
-                angle_diff = (theta_expected - theta_direction + 360) % 360
-                if angle_diff > 180:
-                    angle_diff -= 360
+        while np.linalg.norm(current_position - target_position) > 0.2:
+            #if count <= 10:
+            d0x, d0y = self.d  # direction vector
+            theta_direction = math.degrees(math.atan2(d0y, d0x))  # Angle of the direction vector in degrees
+            theta_expected = math.degrees(math.atan2(b0y - current_position[1], b0x - current_position[0]))  # Expected angle
+            
+            angle_diff = (theta_expected - theta_direction + 360) % 360
+            if angle_diff > 180:
+                angle_diff -= 360
 
-                direction = "forward" if abs(angle_diff) < 90 else "reverse"
-                match direction:
-                    case "forward":
-                        if angle_diff < -5:
-                            # go right
-                            if commands and commands[-1][0] == 'a':
-                                commands[-1] = ('a', commands[-1][1] + 0.2)
-                            else:
-                                commands.append(('a', 0.2))
-                            self.angle = -18.5
-                            mode = "acceleration right"
-                        elif angle_diff > 5:
-                            # go left
-                            if commands and commands[-1][0] == 'd':
-                                commands[-1] = ('d', commands[-1][1] + 0.2)
-                            else:
-                                commands.append(('d', 0.2))
-                            self.angle = 19.0
-                            mode = "acceleration left"
+            direction = "forward" if abs(angle_diff) < 90 else "reverse"
+            match direction:
+                case "forward":
+                    if angle_diff < -5:
+                        # go right
+                        if commands and commands[-1][0] == 'a':
+                            commands[-1] = ('a', commands[-1][1] + 0.2)
                         else:
-                            # go straight
-                            if commands and commands[-1][0] == 's':
-                                commands[-1] = ('s', commands[-1][1] + 0.2)
-                            else:
-                                commands.append(('s', 0.2))
-                            self.angle = 0
-                            mode = "acceleration"
-                    case "reverse":
-                        if angle_diff < -5:
-                            # go left
-                            if commands and commands[-1][0] == 'z':
-                                commands[-1] = ('z', commands[-1][1] + 0.2)
-                            else:
-                                commands.append(('z', 0.2))
-                            self.angle = -18.6
-                            mode = "left reverse"
-                        elif angle_diff > 5:
-                            # go right
-                            if commands and commands[-1][0] == 'c':
-                                commands[-1] = ('c', commands[-1][1] + 0.2)
-                            else:
-                                commands.append(('c', 0.2))
-                            self.angle = 19
-                            mode = "right reverse"
+                            commands.append(('a', 0.2))
+                        self.angle = -18.5
+                        mode = "acceleration right"
+                    elif angle_diff > 5:
+                        # go left
+                        if commands and commands[-1][0] == 'd':
+                            commands[-1] = ('d', commands[-1][1] + 0.2)
                         else:
-                            # go straight
-                            if commands and commands[-1][0] == 'x':
-                                commands[-1] = ('x', commands[-1][1] + 0.2)
-                            else:
-                                commands.append(('x', 0.2))
-                            self.angle = 0
-                            mode = "deceleration"
-                count += 1
-            else:
-                commands.append(('e', 0.5))
-                commands.append(('r', 0.2))
-                count = 0
-                
+                            commands.append(('d', 0.2))
+                        self.angle = 19.0
+                        mode = "acceleration left"
+                    else:
+                        # go straight
+                        if commands and commands[-1][0] == 's':
+                            commands[-1] = ('s', commands[-1][1] + 0.2)
+                        else:
+                            commands.append(('s', 0.2))
+                        self.angle = 0
+                        mode = "acceleration"
+                case "reverse":
+                    if angle_diff < -5:
+                        # go lef
+                        if commands and commands[-1][0] == 'z':
+                            commands[-1] = ('z', commands[-1][1] + 0.2)
+                        else:
+                            commands.append(('z', 0.2))
+                        self.angle = -18.6
+                        mode = "left reverse"
+                    elif angle_diff > 5:
+                        # go right
+                        if commands and commands[-1][0] == 'c':
+                            commands[-1] = ('c', commands[-1][1] + 0.2)
+                        else:
+                            commands.append(('c', 0.2))
+                        self.angle = 19
+                        mode = "right reverse"
+                    else:
+                        # go straight
+                        if commands and commands[-1][0] == 'x':
+                            commands[-1] = ('x', commands[-1][1] + 0.2)
+                        else:
+                            commands.append(('x', 0.2))
+                        self.angle = 0
+                        mode = "deceleration"
+            #count += 1
+            #else:
             current_position = self.position(mode, self.angle)
             print(current_position)
             x_data.append(current_position[0])  # Save x coordinate of the car
             y_data.append(current_position[1])  # Save y coordinate of the car
         
+        commands.append(('e', 0.5))
+        #commands.append(('r', 5))
+        count = 0
+            
+
         commands.append(('e', 0.2))
         return x_data, y_data, commands
 
     
-    def multiple_coords(self, target_coords):
+    def multiple_coords(self, target_coords, z):
+        self.z = z
         x_data, y_data = [], []
         commands = []
         i = 0
@@ -366,11 +370,12 @@ def plot(x, y):
 
 if __name__ == "__main__":
     kitt = KITTmodel()
-    b = (4.2, 2.5)
-    z = [1.0, 1.0]
+    b = [0.18, 0.18] 
+    z = [0.18, 2.18] 
     d = [0, 1]
-    x_data, y_data, commands = kitt.check_coordinates(b)
+    x_data, y_data, commands = kitt.check_coordinates(b, z)
                                        
     plot(x_data, y_data)
     x_data, y_data = execute_commands(commands)
+    print(commands)
     plot(x_data, y_data)
