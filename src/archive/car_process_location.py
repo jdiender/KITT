@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from localization import localization
 from State_tracking_loop_for_stopping import KITTmodel
 import scipy
+from multiprocessing import Process, Queue
 
 class KITT:
     def __init__(self, port, baudrate=115200):
@@ -29,7 +30,7 @@ class KITT:
         self.z =  self.localize()
         i = 0
         while (i <= 3):
-            if (b0x - 0.2) <=self.z <= (b0x + 0.2):
+            if (b0x - 0.2) <= self.z <= (b0x + 0.2):
                 if (b0y - 0.2) <= self.z <= (b0y + 0.2):
                     break
                 else:
@@ -40,7 +41,6 @@ class KITT:
                 self.state_tracking()
                 i += 1
         return commands
-
     
     def set_speed(self, speed):
         self.speed = speed #set speed
@@ -140,9 +140,13 @@ class KITT:
         #plt.show()
         return channel_data
 
+    def localize(self):
+        # Placeholder function for localization
+        return np.random.uniform(-1, 1), np.random.uniform(-1, 1)
+
     def __del__(self):
         self.serial.close()
-        
+
 def wasd(kitt):
     try:
         while True:
@@ -174,14 +178,22 @@ def wasd(kitt):
         if kitt.serial:
             kitt.serial.close()
 
-def execute_commands(kitt, commands):
+def execute_commands(kitt, commands, queue, target_position):
     for command in commands:
         if isinstance(command, tuple):
             key, duration = command
         else:
             key, duration = command, None
 
-        if  key == 'q':  # Stop
+        if not queue.empty():
+            current_position = queue.get()
+            print(f"Current position: {current_position}")
+            if np.allclose(current_position, target_position, atol=0.2):
+                print("Target position reached. Stopping the car.")
+                kitt.stop()
+                break
+
+        if key == 'q':  # Stop
             kitt.stop()
         elif key == 'a':  # Left forward
             kitt.set_angle(100)
@@ -215,73 +227,45 @@ def execute_commands(kitt, commands):
         if duration:
             time.sleep(duration)
 
-def task_a(kitt, b, z):
-    kitt_model = KITTmodel()
-    x_data, y_data, commands = kitt_model.check_coordinates(b, z, d)
-    execute_commands(kitt, commands)  
-    recording = kitt.record()
-    localize = localization(recording)
-    location = localize.locate()
-    print(location)
-    localx, localy= location
-    bx, by = b
-    if abs(localx - bx)<0.2 :
-            if abs(localy - by)<0.2 :
-                print("No repositioning needed")
-            else:
-                x_data, y_data, commands = kitt_model.check_coordinates(b, location, d)
-                execute_commands(kitt, commands)
-    else:
-        x_data, y_data, commands = kitt_model.check_coordinates(b , location, d)
-        execute_commands(kitt, commands)
-    print("Reached destination:", b)  
-        
-def task_b(kitt, b, c, z):
-    task_a(kitt, b, z)
-    time.sleep(10)
-    task_a(kitt, c, z)
+    #kitt.stop()
+
+def localization_process(kitt, queue):
+    while True:
+        location = kitt.localize()
+        queue.put(location)
+        time.sleep(1)  # Adjust the sleep time as necessary
 
 if __name__ == "__main__":
-    kitt = KITT('COM4')
-    b = [4.18, 4.18] 
-    c = [2.18, 2.18] 
-    z = [0.18, 0.18] 
-    task_a(kitt, b, c, z)
-    task_b(kitt, b, c, z)
     
-    """kitt_model = KITTmodel()
-    b = [4.18, 4.18] 
+    kitt_model = KITTmodel()
+    kitt = KITT('COM4')
+    b = [3.18, 2.18] 
     z = [0.18, 0.18] 
     d = [0, 1]
-    x_data, y_data, commands = kitt_model.check_coordinates(b, z)
-    kitt = KITT('COM4')
-    execute_commands(kitt, commands)  
-    recording = kitt.record()
-    localize = localization(recording)
-    location = localize.locate()
-    print(location)
-    localx, localy= location
-    bx, by = b
-    if abs(localx - bx)<0.2 :
-            if abs(localy - by)<0.2 :
-                print("Final destination")
-            else:
-                x_data, y_data, commands = kitt_model.check_coordinates(b, location)
-                execute_commands(kitt, commands)
-                print("Final destination")
-    else:
-        x_data, y_data, commands = kitt_model.check_coordinates(b , location)
-        execute_commands(kitt, commands)
-        print("Final destination")
+    queue = Queue()
+    loc_process = Process(target=localization_process, args=(kitt, queue))
+    loc_process.start()
 
-    #recording = kitt.record()
-    #scipy.io.wavfile.write(r"C:\Users\julie\Documents\TU\Y2 23-24\EPO4Git\KITT\reference.wav", rate= 48000, data=np.array(recording[0]))
-    
-    #print(recording)
-    #localize = localization(recording)
-    #location = localize.locate()
-    #print(location)
-    
-    
-    # use kitt.record for audio
-    # use wasd to steer kitt"""
+    try:
+        x_data, y_data, commands = kitt_model.check_coordinates(b, z)
+
+        execute_commands(kitt, commands)  
+        recording = kitt.record()
+        localize = localization(recording)
+        location = localize.locate()
+        print(location)
+        localx, localy= location
+        bx, by = b
+        if abs(localx - bx)<0.2 :
+                if abs(localy - by)<0.2 :
+                    print("Final destination")
+                else:
+                    x_data, y_data, commands = kitt_model.check_coordinates(b, location)
+                    execute_commands(kitt, commands)
+        else:
+            x_data, y_data, commands = kitt_model.check_coordinates(b , location)
+            execute_commands(kitt, commands)
+    finally:
+        loc_process.terminate()
+        loc_process.join()
+        kitt.serial.close()
