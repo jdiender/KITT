@@ -35,19 +35,19 @@ class KITTmodel:
                     F_net = 5.94 - Fd  # net force equal to max Fa - Fd        
             case 'deceleration':
                 if self.v < 0:
-                    F_net = -7.4 + Fd  # net force equal to max Fb + Fd
+                    F_net = -8.29 + Fd  # net force equal to max Fb + Fd
                 else:
-                    F_net = -7.4 - Fd  # net force equal to max Fb - Fd 
+                    F_net = -8.29 - Fd  # net force equal to max Fb - Fd 
             case 'left reverse':
                 if self.v > 0:
-                    F_net = -5.94 - Fd  # net force equal to max Fb - Fd
+                    F_net = -6.58 - Fd  # net force equal to max Fb - Fd
                 else:
-                    F_net = -5.94 + Fd  # net force equal to max Fb + Fd
+                    F_net = -6.58 + Fd  # net force equal to max Fb + Fd
             case 'right reverse':
                 if self.v > 0:
-                    F_net = -5.9 - Fd  # net force equal to max Fb - Fd
+                    F_net = -6.53 - Fd  # net force equal to max Fb - Fd
                 else:
-                    F_net = -5.9 + Fd  # net force equal to max Fb + Fd       
+                    F_net = -6.53 + Fd  # net force equal to max Fb + Fd       
         a = F_net / m  # determine acceleration
         self.v = self.v0 + a * self.dt  # determine new velocity
             
@@ -181,13 +181,16 @@ class KITTmodel:
         # Find the intersection point of the car's orientation line and the perpendicular line
         new_x1, new_y1 = self.get_intersection(car_slope, car_intercept, perp_slope1, perp_intercept1)
         new_x2, new_y2 = self.get_intersection(car_slope, car_intercept, perp_slope2, perp_intercept2)
-        
+        print(new_x1, new_y1)
+        print(new_x2, new_y2)
         # Check if new_x1, new_x2, new_y1 and new_y2 are within boundary.
         # Return the correct x and y that are in boundary.
         if (0.18 <= new_x1) and (new_x1 <= 4.42) and (0.18 <= new_y1) and (new_y1 <= 4.42):
             return (new_x1, new_y1)
         elif (0.18 <= new_x2) and (new_x2 <= 4.42) and (0.18 <= new_y2) and (new_y2 <= 4.42):
             return (new_x2, new_y2)
+        else:
+            return(2.4, 2.4)
     
     def check_coordinates(self, target_position, z):
         self.z = z
@@ -195,13 +198,17 @@ class KITTmodel:
         b0x, b0y = target_position
 
         projected_coordinates = self.calculate_projection_coordinates(b0x, b0y)
+        print(projected_coordinates)
         if not projected_coordinates:
             x_data, y_data, commands = self.state_tracking(b0x, b0y, z)
         else:
-            waypoints = [coord for coord in projected_coordinates if coord != (0, 0)]
-            waypoints.append(target_position, z)
-            print(waypoints)
-            x_data, y_data, commands = self.multiple_coords(waypoints, z)
+            waypoints = list(projected_coordinates)  # Ensure waypoints is a list
+            x_proj, y_proj, commands_to_proj = self.projection_coords(waypoints, z)
+            z_proj = [x_proj[-1], y_proj[-1]]
+            x_data_to_point, y_data_to_point, commands_to_point = self.state_tracking(b0x, b0y, z_proj)
+            x_data = np.append(x_proj, x_data_to_point)
+            y_data = np.append(y_proj, y_data_to_point)
+            commands = commands_to_proj+ commands_to_point
         return x_data, y_data, commands
 
         
@@ -214,101 +221,93 @@ class KITTmodel:
         count = 0
         
         while np.linalg.norm(current_position - target_position) > 0.2:
-            # Debug print to check loop entry
-            print("Entering while loop")
-            
-            d0x, d0y = self.d  # direction vector
-            print("Direction vector:", d0x, d0y)  # Debug print
+            if count <= 15:
+                d0x, d0y = self.d  # direction vector
+                theta_direction = math.degrees(math.atan2(d0y, d0x))  # Angle of the direction vector in degrees
+                theta_expected = math.degrees(math.atan2(b0y - current_position[1], b0x - current_position[0]))  # Expected angle
 
-            theta_direction = math.degrees(math.atan2(d0y, d0x))  # Angle of the direction vector in degrees
-            print("Theta direction:", theta_direction)  # Debug print
-
-            theta_expected = math.degrees(math.atan2(b0y - current_position[1], b0x - current_position[0]))  # Expected angle
-            print("Theta expected:", theta_expected)  # Debug print
-
-            angle_diff = (theta_expected - theta_direction + 360) % 360
-            if angle_diff > 180:
-                angle_diff -= 360
-
-            # Debug print to check angle difference
-            print("angle:", angle_diff)
-            
-            direction = "forward" if abs(angle_diff) < 90 else "reverse"
-            match direction:
-                case "forward":
-                    if angle_diff < -5:
-                        # go right
-                        if commands and commands[-1][0] == 'a':
-                            commands[-1] = ('a', commands[-1][1] + 0.2)
+                angle_diff = (theta_expected - theta_direction + 360) % 360
+                if angle_diff > 180:
+                    angle_diff -= 360
+                
+                direction = "forward" if abs(angle_diff) < 90 else "reverse"
+                
+                match direction:
+                    case "forward":
+                        if angle_diff < -5:
+                            # go right
+                            if commands and commands[-1][0] == 'a':
+                                commands[-1] = ('a', commands[-1][1] + 0.2)
+                            else:
+                                commands.append(('a', 0.2))
+                            self.angle = -18.5
+                            mode = "acceleration right"
+                        elif angle_diff > 5:
+                            # go left
+                            if commands and commands[-1][0] == 'd':
+                                commands[-1] = ('d', commands[-1][1] + 0.2)
+                            else:
+                                commands.append(('d', 0.2))
+                            self.angle = 19.0
+                            mode = "acceleration left"
                         else:
-                            commands.append(('a', 0.2))
-                        self.angle = -18.5
-                        mode = "acceleration right"
-                    elif angle_diff > 5:
-                        # go left
-                        if commands and commands[-1][0] == 'd':
-                            commands[-1] = ('d', commands[-1][1] + 0.2)
+                            # go straight
+                            if commands and commands[-1][0] == 's':
+                                commands[-1] = ('s', commands[-1][1] + 0.2)
+                            else:
+                                commands.append(('s', 0.2))
+                            self.angle = 0
+                            mode = "acceleration"
+                    case "reverse":
+                        if -90>angle_diff > -175:
+                            # go left
+                            if commands and commands[-1][0] == 'z':
+                                commands[-1] = ('z', commands[-1][1] + 0.2)
+                            else:
+                                commands.append(('z', 0.2))
+                            self.angle = -17.6
+                            mode = "left reverse"
+                        elif 90< angle_diff < 175 :
+                            # go right
+                            if commands and commands[-1][0] == 'c':
+                                commands[-1] = ('c', commands[-1][1] + 0.2)
+                            else:
+                                commands.append(('c', 0.2))
+                            self.angle = 18
+                            mode = "right reverse"
                         else:
-                            commands.append(('d', 0.2))
-                        self.angle = 19.0
-                        mode = "acceleration left"
-                    else:
-                        # go straight
-                        if commands and commands[-1][0] == 's':
-                            commands[-1] = ('s', commands[-1][1] + 0.2)
-                        else:
-                            commands.append(('s', 0.2))
-                        self.angle = 0
-                        mode = "acceleration"
-                case "reverse":
-                    if angle_diff < -175:
-                        # go left
-                        if commands and commands[-1][0] == 'z':
-                            commands[-1] = ('z', commands[-1][1] + 0.2)
-                        else:
-                            commands.append(('z', 0.2))
-                        self.angle = -18.6
-                        mode = "left reverse"
-                    elif angle_diff > 185:
-                        # go right
-                        if commands and commands[-1][0] == 'c':
-                            commands[-1] = ('c', commands[-1][1] + 0.2)
-                        else:
-                            commands.append(('c', 0.2))
-                        self.angle = 19
-                        mode = "right reverse"
-                    else:
-                        # go straight
-                        if commands and commands[-1][0] == 'x':
-                            commands[-1] = ('x', commands[-1][1] + 0.2)
-                        else:
-                            commands.append(('x', 0.2))
-                        self.angle = 0
-                        mode = "deceleration"
+                            # go straight
+                            if commands and commands[-1][0] == 'x':
+                                commands[-1] = ('x', commands[-1][1] + 0.2)
+                            else:
+                                commands.append(('x', 0.2))
+                            self.angle = 0
+                            mode = "deceleration"
+                count += 1
+            else:
+                commands.append(('e', 0.3))
+                count = 0
             current_position = self.position(mode, self.angle)
-            print(current_position)
             x_data.append(current_position[0])  # Save x coordinate of the car
             y_data.append(current_position[1])  # Save y coordinate of the car
         
-        commands.append(('e', 0.5))
-        commands.append(('e', 0.2))
+        commands.append(('e', 0.3))
         return x_data, y_data, commands
 
     
-    def multiple_coords(self, target_coords, z):
+    def projection_coords(self, target_coords, z):
         self.z = z
         x_data, y_data = [], []
         commands = []
-        i = 0
-        while (i < len(target_coords)):
-            coord_x =  target_coords[i] 
-            coord_y = target_coords[i+1]
-            x_vals, y_vals, cmd = self.state_tracking(coord_x, coord_y)
-            x_data += x_vals
-            y_data += y_vals
-            commands += cmd
-            i= i+2
+        coord_x =  target_coords[0] 
+        coord_y = target_coords[1]
+        x_vals, y_vals, cmd = self.state_tracking(coord_x, coord_y, z)
+        
+        x_data += x_vals
+        y_data += y_vals
+        commands += cmd
         return x_data, y_data, commands
+    
     
     
 def wasd(kitt, command=None):
@@ -340,10 +339,6 @@ def wasd(kitt, command=None):
     elif key == 'z':  # Left Backwards
         kitt.angle = -18.6
         pos = kitt.position("left reverse", kitt.angle)
-    elif key == 'r': #start recording
-        print("Car should record at this location")
-        pos = kitt.position("deceleration", kitt.angle)
-    print(pos)
     return pos
 
 def execute_commands(commands):
@@ -361,24 +356,33 @@ def execute_commands(commands):
             
     return x_data, y_data
 
-
-def plot(x, y):
-    plt.plot(x, y)
+def plot(x, y, start_position, target):
+    plt.plot(x, y, label='Path')
+    
+    start_positionx, start_positiony = start_position
+    # Mark the starting position with a dot
+    plt.scatter(start_positionx, start_positiony , color='blue', marker='o', label='Start Position')
+    targetx, targety =target
+    # Mark the target positions with an 'x'
+    plt.scatter(targetx, targety , color='red', marker='x', label=f'Target {chr(65)}')
+    
     plt.xlabel('X Position')
     plt.ylabel('Y Position')
     plt.xlim(-2.5, 5)
     plt.ylim(-2, 5)
     plt.title('KITT Model Position')
+    plt.legend()
     plt.show()
+
 
 if __name__ == "__main__":
     kitt = KITTmodel()
-    b = [0.18, 0.18] 
-    z = [0.18, 2.18] 
+    b = [2.68, 3.18] 
+    z = [2.18, 3.18] 
     d = [0, 1]
     x_data, y_data, commands = kitt.check_coordinates(b, z)
                                        
-    plot(x_data, y_data)
+    plot(x_data, y_data, z, b)
     x_data, y_data = execute_commands(commands)
-    print(commands)
-    plot(x_data, y_data)
+
+

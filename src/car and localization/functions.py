@@ -49,8 +49,8 @@ def calculate_distances_for_channel_pairs(channels):
     # load reference channel
     _, ref = wavfile.read(r"C:\Users\julie\Documents\TU\Y2 23-24\EPO4Git\KITT\ref1.wav")
     ref = ref[48000:56000]
-    plt.plot(ref)
-    plt.show()
+    #plt.plot(ref)
+    #plt.show()
     # crop channels in paramater `channels`
     cropped_channels = crop_channels(channels)
 
