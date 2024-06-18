@@ -217,7 +217,7 @@ def execute_commands(kitt, commands):
 
 def task_a(kitt, b, z):
     kitt_model = KITTmodel()
-    x_data, y_data, commands = kitt_model.check_coordinates(b, z, d)
+    x_data, y_data, commands = kitt_model.check_coordinates(b, z)
     execute_commands(kitt, commands)  
     recording = kitt.record()
     localize = localization(recording)
@@ -229,10 +229,10 @@ def task_a(kitt, b, z):
             if abs(localy - by)<0.2 :
                 print("No repositioning needed")
             else:
-                x_data, y_data, commands = kitt_model.check_coordinates(b, location, d)
+                x_data, y_data, commands = kitt_model.check_coordinates(b, location)
                 execute_commands(kitt, commands)
     else:
-        x_data, y_data, commands = kitt_model.check_coordinates(b , location, d)
+        x_data, y_data, commands = kitt_model.check_coordinates(b , location)
         execute_commands(kitt, commands)
     print("Reached destination:", b)  
         
@@ -240,15 +240,57 @@ def task_b(kitt, b, c, z):
     task_a(kitt, b, z)
     time.sleep(10)
     task_a(kitt, c, z)
+    
+import time
+
+def task_c(kitt, b, z):
+    kitt_model = KITTmodel()
+    x_data, y_data, commands = kitt_model.check_coordinates(b, z)
+    for command, duration in commands:
+        start_time = time.time()
+        end_time = start_time + duration
+
+        while time.time() < end_time:
+            # Check distance sensors
+            left_distance, right_distance = kitt.sensor_data()
+            
+            if left_distance < 50 or right_distance < 50:
+                # Obstacle detected, perform avoidance maneuver
+                kitt.stop()
+                
+                if left_distance < right_distance:
+                    # Turn right to avoid obstacle on the left
+                    kitt.set_angle(100)
+                else:
+                    # Turn left to avoid obstacle on the right
+                    kitt.set_angle(200)
+                
+                kitt.set_speed(160)  # Move forward while turning
+                time.sleep(2.5)  # Sleep for 2.5 seconds to complete the quarter turn
+                kitt.emergency_brake()
+
+                recording = kitt.record()
+                localize = localization(recording)
+                location = localize.locate()
+                task_a(kitt, b, location)
+
+            else:
+                # No obstacle, continue with the command
+                pos = wasd(kitt, command)
+                x_data.append(pos[0])
+                y_data.append(pos[1])
+                time.sleep(kitt.dt)
+
+    return x_data, y_data
 
 if __name__ == "__main__":
     kitt = KITT('COM4')
-    b = [4.18, 4.18] 
-    c = [2.18, 2.18] 
-    z = [0.18, 0.18] 
-    task_a(kitt, b, c, z)
+    b = [4.18, 4.18] #first coordinate kitt needs to drive to
+    c = [2.18, 2.18] #second coordinate kitt needs to drive to
+    z = [0.18, 0.18] #Starting coordinate kitt 
+    task_a(kitt, b, z)
     task_b(kitt, b, c, z)
-    
+    task_c(kitt, b, z)
     """kitt_model = KITTmodel()
     b = [4.18, 4.18] 
     z = [0.18, 0.18] 
