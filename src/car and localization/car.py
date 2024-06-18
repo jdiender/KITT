@@ -215,8 +215,9 @@ def execute_commands(kitt, commands):
         if duration:
             time.sleep(duration)
 
-def task_a(kitt, b, z):
+def task_a(b, z):
     kitt_model = KITTmodel()
+    kitt = KITT('COM4')
     x_data, y_data, commands = kitt_model.check_coordinates(b, z)
     execute_commands(kitt, commands)  
     recording = kitt.record()
@@ -225,7 +226,11 @@ def task_a(kitt, b, z):
     print(location)
     localx, localy= location
     bx, by = b
-    if abs(localx - bx)<0.2 :
+    if abs(localx - bx)>1.5:
+        print("No repositioning needed")
+    elif abs(localy - by)>1.5:  
+         print("No repositioning needed")
+    elif abs(localx - bx)<0.2 :
             if abs(localy - by)<0.2 :
                 print("No repositioning needed")
             else:
@@ -235,11 +240,17 @@ def task_a(kitt, b, z):
         x_data, y_data, commands = kitt_model.check_coordinates(b , location)
         execute_commands(kitt, commands)
     print("Reached destination:", b)  
+    kitt.serial.close()
         
-def task_b(kitt, b, c, z):
-    task_a(kitt, b, z)
-    time.sleep(10)
-    task_a(kitt, c, z)
+def task_b(b, c, z):
+    task_a( b, z)
+    time.sleep(20)
+    kitt = KITT('COM4')
+    recording = kitt.record()
+    localize = localization(recording)
+    location = localize.locate()
+    kitt.serial.close()
+    task_a( c, location)
     
 import time
 
@@ -284,37 +295,15 @@ def task_c(kitt, b, z):
     return x_data, y_data
 
 if __name__ == "__main__":
-    kitt = KITT('COM4')
-    b = [4.18, 4.18] #first coordinate kitt needs to drive to
-    c = [2.18, 2.18] #second coordinate kitt needs to drive to
+    #kitt_model = KITTmodel()
+    b = [2.18, 2.18] #first coordinate kitt needs to drive to
+    c = [4.18, 2.18] #second coordinate kitt needs to drive to
     z = [0.18, 0.18] #Starting coordinate kitt 
-    task_a(kitt, b, z)
-    task_b(kitt, b, c, z)
-    task_c(kitt, b, z)
-    """kitt_model = KITTmodel()
-    b = [4.18, 4.18] 
-    z = [0.18, 0.18] 
-    d = [0, 1]
-    x_data, y_data, commands = kitt_model.check_coordinates(b, z)
-    kitt = KITT('COM4')
-    execute_commands(kitt, commands)  
-    recording = kitt.record()
-    localize = localization(recording)
-    location = localize.locate()
-    print(location)
-    localx, localy= location
-    bx, by = b
-    if abs(localx - bx)<0.2 :
-            if abs(localy - by)<0.2 :
-                print("Final destination")
-            else:
-                x_data, y_data, commands = kitt_model.check_coordinates(b, location)
-                execute_commands(kitt, commands)
-                print("Final destination")
-    else:
-        x_data, y_data, commands = kitt_model.check_coordinates(b , location)
-        execute_commands(kitt, commands)
-        print("Final destination")
+    #task_a( b, z)
+    task_b (b, c, z)
+    #task_c(kitt, b, z)
+    
+
 
     #recording = kitt.record()
     #scipy.io.wavfile.write(r"C:\Users\julie\Documents\TU\Y2 23-24\EPO4Git\KITT\reference.wav", rate= 48000, data=np.array(recording[0]))
@@ -326,4 +315,4 @@ if __name__ == "__main__":
     
     
     # use kitt.record for audio
-    # use wasd to steer kitt"""
+    # use wasd to steer kitt
